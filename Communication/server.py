@@ -1,17 +1,29 @@
 import socket
-import select
 import threading
-import png
+import struct
+import io
+from PIL import Image
 
 def handle(client):
-	f = open("temp.jpg", "wb")
-	while (True):
-		data = client.recv(1024)
-		if len(data) == 0:
-			break
-		f.write(data)
-	f.close()
-	print("Received image, saved to temp.jpg")
+	buffer = client.makefile('rb')
+	i = 0
+	try:
+		while True:
+			image_len = struct.unpack('<L', buffer.read(4))[0]
+			if not image_len:
+				break
+			stream = io.BytesIO()
+			stream.write(buffer.read(image_len))
+			stream.seek(0)
+			image = Image.open(stream)
+			#instead of this, just render to the screen !!!
+			image.save("temp"+str(i)+".jpg")
+			i+=1
+			#print('Image is %dx%d' % image.size)
+			#image.verify()
+			#print('Image is verified')
+	finally:
+		buffer.close()
 
 class Server(object):
 	def __init__(self, address, port):
@@ -35,7 +47,6 @@ class Server(object):
 	
 def run():
 	address = socket.gethostbyname(socket.gethostname()) #seems to only work on windows
-	print("Connecting to " + address)
 	port = 1101
 	server = Server(address, port)
 	server.listen()
