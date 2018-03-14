@@ -55,7 +55,7 @@ Open source - do what you want with this code!
 #define MOTOR1_PIN 9
 #define MOTOR2_PIN 11
 #define MOTOR3_PIN 10
-#define MOTOR4_PIN 6
+#define MOTOR4_PIN 3
 
 #define NO 0
 #define P1 1
@@ -64,10 +64,18 @@ Open source - do what you want with this code!
 #define P4 4
 #define RUN 5
 #define ALL 7
+#define MASK 8
+
+#define ESC1_BIT 1
+#define ESC2_BIT 2
+#define ESC3_BIT 4
+#define ESC4_BIT 8
+#define ALL_BIT (1|2|4|8)
 
 int value = 0; // set values you need to zero
 int mode;
 char in;
+unsigned char curBitmask;
 
 Servo ESC1, ESC2, ESC3, ESC4; //Create as much as Servoobject you want. You can controll 2 or more Servos at the same time
 
@@ -75,11 +83,38 @@ int escPin = 9;
 int minPulseRate = 1000;
 int maxPulseRate = 2000;
 int throttleChangeDelay = 20;
+float biasESC1 = 1.0f;
+float biasESC2 = 1.0f;
+float biasESC3 = 1.0f;
+float biasESC4 = 1.0f;
 
 int curr_throttle;
 
+void setESCThrottle(unsigned char bitmask, unsigned int value)
+{
+  Serial.print(bitmask);
+  Serial.print(" ");
+  Serial.println(value);
+  if(bitmask & 0x01){
+    Serial.println("Writing to 1");
+    ESC1.write((int)(value * biasESC1));
+  }
+  if(bitmask & 0x02){
+    ESC2.write((int)(value * biasESC2));
+    Serial.println("Writing to 2");
+  }
+  if(bitmask & 0x04){
+    ESC3.write((int)(value * biasESC3));
+    Serial.println("Writing to 3");
+  }
+  if(bitmask & 0x08){
+    ESC4.write((int)(value * biasESC4));
+    Serial.println("Writing to 4");
+  }
+}
+
 void setup() {
-  Serial.begin(9600);    // start serial at 9600 baud
+  Serial.begin(38400);    // start serial at 9600 baud
   Serial.setTimeout(500);
   Serial.println("Starting Up!");
   
@@ -96,164 +131,90 @@ void setup() {
   
   delay(2000);
   Serial.println("Ready to Program!");
-
+  ESC4.write(55);
+  delay(1000);
+  ESC4.write(0);
   mode = NO;
 }
 
 void loop() {
-  if(mode == RUN){
-    if(Serial.available()) {
-      curr_throttle = 0;
-      mode = NO;
-      ESC1.write(curr_throttle);
-      ESC2.write(curr_throttle);
-      ESC3.write(curr_throttle);
-      ESC4.write(curr_throttle);
-    }
-    int throttle = analogRead(0);
-    throttle = map(throttle, 0, 1023, 0, 180);
-    throttle = normalizeThrottle(throttle);
-    if(throttle < 46 && throttle > 10)
-    {
-      throttle = 46;
-    }else if(throttle <= 10)
-    {
-      throttle = 0;
-    }
-    if(throttle != curr_throttle)
-    {
-      curr_throttle = throttle;
-      ESC1.write(curr_throttle);
-      ESC2.write(curr_throttle);
-      ESC3.write(curr_throttle);
-      ESC4.write(curr_throttle);
-    }
-
-  } else if(mode == NO){
-    curr_throttle = 0;
-    if(Serial.available()) {
-      in = Serial.read();    // Parse an Integer from Serial
-      if(in == '1'){
-        mode = P1;
-        Serial.println("Programming ESC1");
-      }else if(in == '2'){
-        mode = P2;
-        Serial.println("Programming ESC2");
-      }else if(in == '3'){
-        mode = P3;
-        Serial.println("Programming ESC3");
-      }else if(in == '4'){
-        mode = P4;
-        Serial.println("Programming ESC4");
-      }else if(in == '5'){
-        mode = RUN;
-        Serial.println("Running!");
-      } else if(in == '7') {
-        mode = ALL;
-        Serial.println("Programming all!");
-      }else {
-        Serial.println("Invalid Character!");
-      }
-    }
-  }else{
-    switch(mode){
-      case P1:
-        while(1){
-          if(Serial.available()){
-            in = Serial.peek();
-            if(in == 'q'){
-              Serial.read();
-              mode = NO;
-              Serial.println("Ready to Program!");
-              break;
-            }
-            value = Serial.parseInt();
-            Serial.println("Writing: ");
-            Serial.println(value);
-            ESC1.write(value);
-            Serial.flush();
-          }
-        }
-        break;
-      case P2:
-        while(1){
-          if(Serial.available()){
-            in = Serial.peek();
-            if(in == 'q'){
-              Serial.read();
-              mode = NO;
-              Serial.println("Ready to Program!");
-              break;
-            }
-            value = Serial.parseInt();
-            Serial.println("Writing: ");
-            Serial.println(value);
-            ESC2.write(value);
-            Serial.flush();
-          }
-        }
-        break;
-      case P3:
-        while(1){
-          if(Serial.available()){
-            in = Serial.peek();
-            if(in == 'q'){
-              Serial.read();
-              mode = NO;
-              Serial.println("Ready to Program!");
-              break;
-            }
-            value = Serial.parseInt();
-            Serial.println("Writing: ");
-            Serial.println(value);
-            ESC3.write(value);
-            Serial.flush();
-          }
-        }
-        break;
-      case P4:
-        while(1){
-          if(Serial.available()){
-            in = Serial.peek();
-            if(in == 'q'){
-              Serial.read();
-              mode = NO;
-              Serial.println("Ready to Program!");
-              break;
-            }
-            value = Serial.parseInt();
-            Serial.println("Writing: ");
-            Serial.println(value);
-            ESC4.write(value);
-            Serial.flush();
-          }
-        }
-        break;
-      case ALL:
-        while(1){
-          if(Serial.available()){
-            in = Serial.peek();
-            if(in == 'q'){
-              Serial.read();
-              mode = NO;
-              Serial.println("Ready to Program!");
-              break;
-            }
-            value = Serial.parseInt();
-            Serial.println("Writing: ");
-            Serial.println(value);
-            ESC1.write(value);
-            ESC2.write(value);
-            ESC3.write(value);
-            ESC4.write(value);
-            Serial.flush();
-          }
-        }
-        break;
-      default:
+  
+  int throttle;
+  switch(mode){
+    case RUN:
+      if(Serial.available()) {
+        curr_throttle = 0;
         mode = NO;
-        break;
-    }
+        setESCThrottle(ALL_BIT, curr_throttle);
+      }
+      throttle = analogRead(0);
+      throttle = map(throttle, 0, 1023, 0, 180);
+      throttle = normalizeThrottle(throttle);
+      if(throttle < 46 && throttle > 10)
+      {
+        throttle = 46;
+      }else if(throttle <= 10)
+      {
+        throttle = 0;
+      }
+      if(throttle != curr_throttle)
+      {
+        curr_throttle = throttle;
+        setESCThrottle(ALL_BIT, curr_throttle);
+      }
+    break;
+    case NO:
+      curr_throttle = 0;
+      curBitmask = 0;
+      while(Serial.available()) {
+        in = Serial.peek();
+        int inNum = in - '0';
+        if(inNum > 0 && inNum <= 4) {
+          Serial.read();
+          unsigned char maskVal = 1;//(unsigned char)pow(2, inNum-1);
+          for(int i = 0; i < inNum - 1; i++)
+          {
+            maskVal *= 2;
+          }
+          curBitmask |= maskVal;
+          Serial.print("ESC");
+          Serial.print(inNum);
+          Serial.print(" ");
+        } else if(in == '|') {
+          Serial.read();
+        } else {
+          Serial.read();
+          break;
+        }
+        delayMicroseconds(300);
+      }
+      if(curBitmask != 0){
+        Serial.print("\n");
+        mode = MASK;
+      }
+      Serial.flush();
+    break;
+    case MASK:
+      while(1){
+        if(Serial.available()){
+          in = Serial.peek();
+          if(in == 'q'){
+            Serial.read();
+            mode = NO;
+            Serial.println("Ready to Program!");
+            break;
+          }
+          value = Serial.parseInt();
+          Serial.println("Writing: ");
+          Serial.println(value);
+          setESCThrottle(curBitmask, value);
+          Serial.flush();
+        }
+      }
+      break;
+    default:
+      mode = NO;
+      break;
   }
 }
 
