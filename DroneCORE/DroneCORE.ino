@@ -1,3 +1,5 @@
+/*
+
 #define READ_PIN 0
 #define MOTOR_1 3
 #define MOTOR_2 9
@@ -7,7 +9,11 @@
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  //Initialize ESCs
+  //Initialize MPU
+
   
+  Serial.println("Ready!");
 }
 
 int input;
@@ -22,3 +28,5 @@ void loop() {
   analogWrite(MOTOR_3, input);
   analogWrite(MOTOR_4, input);
 }
+
+*/
