@@ -5,11 +5,14 @@ from rasterizer import *
 import pygame
 import time
 import serial
+import sys
+
+port = sys.argv[1]
 
 pygame.init()
 screen = pygame.display.set_mode((800,600))
 
-ser = serial.Serial('/dev/ttyACM0', 115200)
+ser = serial.Serial('/dev/'+port, 115200)
 
 cam = RasterizerCamera(VectorN(400,300,500,1), VectorN(400,300,0,1))
 lights = []
@@ -39,9 +42,12 @@ done = False
  
 try:
     while True:
+        print('A')
         line = ser.readline().decode().strip()
         print(line)
         if 'send' in line.lower():
+            print("Got Send Request")
+            print("Sending Letter\n")
             ser.write(b'A')
             break
 except:
@@ -65,7 +71,7 @@ while not done:
     try:
         line = ser.readline().decode().strip()
         lineSplit = line.split()
-        print(line)
+        #print(line)
         if "ypr" == lineSplit[0]:
            masterRotY = float(lineSplit[1]) 
            masterRotX = float(lineSplit[2]) 

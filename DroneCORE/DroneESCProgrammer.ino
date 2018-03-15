@@ -52,10 +52,10 @@ Open source - do what you want with this code!
 */
 #include <Servo.h>
 
-#define MOTOR1_PIN 9
-#define MOTOR2_PIN 11
+#define MOTOR1_PIN 3
+#define MOTOR2_PIN 9
 #define MOTOR3_PIN 10
-#define MOTOR4_PIN 3
+#define MOTOR4_PIN 11
 
 #define NO 0
 #define P1 1

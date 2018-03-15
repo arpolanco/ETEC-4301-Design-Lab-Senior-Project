@@ -1,3 +1,5 @@
+
+/*
 #define LEFT_PIN 9
 #define RIGHT_PIN 10
 #define POT_PIN 0
@@ -72,3 +74,5 @@ void loop() {
     i++;
     delay(30);
 }
+
+*/

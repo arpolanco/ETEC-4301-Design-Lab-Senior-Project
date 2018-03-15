@@ -408,4 +408,3 @@ float getAccelZ(){
   return realAccelZ;
 }
 
-
