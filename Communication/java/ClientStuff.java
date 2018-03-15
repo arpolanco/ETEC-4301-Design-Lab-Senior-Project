@@ -40,10 +40,14 @@ class ClientStuff extends Thread{
                 grabber.setFormat("H264");
                 grabber.start();
                 long time;
+                /*  todo: there's a sort of "build up" of frames at first where
+                    nothing gets displayed at first, but then many frames flash
+                    at once
+                */
                 while(true){
-                    //time = System.nanoTime();
+                    time = System.nanoTime();
                     frame = converter.convert(grabber.grab());
-                    removeThis.draw(frame);
+                    removeThis.draw(frame, 1000000.0/((((double)(System.nanoTime()-time)))));
                     //System.out.println(1/(((float)(System.nanoTime()-time))/1000000.0));
                 }
             }catch(IOException e){
