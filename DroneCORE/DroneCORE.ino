@@ -1,25 +1,40 @@
-/*
-
 #define READ_PIN 0
 #define MOTOR_1 3
 #define MOTOR_2 9
 #define MOTOR_3 10
 #define MOTOR_4 11
 
+
+#define PROGRAMMING true
+#define STABILIZING true
+
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  //Initialize ESCs
-  //Initialize MPU
-
   
-  Serial.println("Ready!");
+  Serial.begin(19200);
+  initializeESCs();
+  
+  #ifdef PROGRAMMING
+  programmerLoop();
+  #endif
+  
+  #ifdef STABILIZING
+  stabSetup();
+  #endif
 }
 
 int input;
 
 void loop() {
+  //#ifdef PROGRAMMING
+  //programmerLoop();
+  //#endif
+
+  #ifdef STABILIZING
+  stabLoop();
+  #endif
   // put your main code here, to run repeatedly:
+  /*
   input = analogRead(READ_PIN);
   input = map(input, 0, 1023, 0, 255);
   Serial.println(input);
@@ -27,6 +42,5 @@ void loop() {
   analogWrite(MOTOR_2, input);
   analogWrite(MOTOR_3, input);
   analogWrite(MOTOR_4, input);
+  */
 }
-
-*/

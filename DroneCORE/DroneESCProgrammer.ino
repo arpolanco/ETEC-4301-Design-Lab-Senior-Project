@@ -52,10 +52,12 @@ Open source - do what you want with this code!
 */
 #include <Servo.h>
 
-#define MOTOR1_PIN 3
-#define MOTOR2_PIN 9
+#define MOTOR1_PIN 9
+#define MOTOR2_PIN 11
 #define MOTOR3_PIN 10
-#define MOTOR4_PIN 11
+#define MOTOR4_PIN 3
+
+//#define LEFT_SIDE (MOTOR2_PIN | MOTOR3_PIN)
 
 #define NO 0
 #define P1 1
@@ -83,37 +85,58 @@ int escPin = 9;
 int minPulseRate = 1000;
 int maxPulseRate = 2000;
 int throttleChangeDelay = 20;
-float biasESC1 = 1.0f;
+float biasESC1 = 0.8f;
 float biasESC2 = 1.0f;
 float biasESC3 = 1.0f;
-float biasESC4 = 1.0f;
+float biasESC4 = 1.2f;
 
 int curr_throttle;
 
 void setESCThrottle(unsigned char bitmask, unsigned int value)
 {
-  Serial.print(bitmask);
-  Serial.print(" ");
-  Serial.println(value);
+  //Serial.print(bitmask);
+  //Serial.print(" ");
+  //Serial.println(value);
   if(bitmask & 0x01){
-    Serial.println("Writing to 1");
+    //Serial.println("Writing to 1");
     ESC1.write((int)(value * biasESC1));
   }
   if(bitmask & 0x02){
     ESC2.write((int)(value * biasESC2));
-    Serial.println("Writing to 2");
+    //Serial.println("Writing to 2");
   }
   if(bitmask & 0x04){
     ESC3.write((int)(value * biasESC3));
-    Serial.println("Writing to 3");
+    //Serial.println("Writing to 3");
   }
   if(bitmask & 0x08){
     ESC4.write((int)(value * biasESC4));
-    Serial.println("Writing to 4");
+    //Serial.println("Writing to 4");
   }
 }
 
-void setup() {
+void initializeESCs() {
+  //Serial.setTimeout(500);
+  Serial.println("Starting Up!");
+  
+  ESC1.attach(MOTOR_1, minPulseRate, maxPulseRate);    // attached to pin 9 I just do this with 1 Servo
+  ESC2.attach(MOTOR_2, minPulseRate, maxPulseRate);    // attached to pin 9 I just do this with 1 Servo
+  ESC3.attach(MOTOR_3, minPulseRate, maxPulseRate);    // attached to pin 9 I just do this with 1 Servo
+  ESC4.attach(MOTOR_4, minPulseRate, maxPulseRate);    // attached to pin 9 I just do this with 1 Servo
+
+  ESC1.write(0);
+  ESC2.write(0);
+  ESC3.write(0);
+  ESC4.write(0);
+  curr_throttle = 0;
+  
+  delay(2000);
+  Serial.println("Ready to Program!");
+}
+
+
+/*
+  void programmerSetup() {
   Serial.begin(38400);    // start serial at 9600 baud
   Serial.setTimeout(500);
   Serial.println("Starting Up!");
@@ -136,9 +159,10 @@ void setup() {
   ESC4.write(0);
   mode = NO;
 }
-
-void loop() {
-  
+*/
+void programmerLoop() {
+  bool isDone = false;
+  while(!isDone){
   int throttle;
   switch(mode){
     case RUN:
@@ -168,6 +192,10 @@ void loop() {
       curBitmask = 0;
       while(Serial.available()) {
         in = Serial.peek();
+        if(in == 'q'){
+          isDone = true;
+          break;
+        }
         int inNum = in - '0';
         if(inNum > 0 && inNum <= 4) {
           Serial.read();
@@ -186,7 +214,7 @@ void loop() {
           Serial.read();
           break;
         }
-        delayMicroseconds(300);
+        delayMicroseconds(3000);
       }
       if(curBitmask != 0){
         Serial.print("\n");
@@ -216,6 +244,7 @@ void loop() {
       mode = NO;
       break;
   }
+  }
 }
 
 // Ensure the throttle value is between 0 - 180
@@ -226,3 +255,4 @@ int normalizeThrottle(int value) {
     return 180;
 return value;
 }
+
