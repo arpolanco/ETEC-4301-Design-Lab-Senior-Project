@@ -21,7 +21,9 @@ public class VideoStream {
         frame.setVisible(true);
     }
     
-    public void draw(BufferedImage image){
+    public void draw(BufferedImage image, double framerate){
         panel.getGraphics().drawImage(image, 0, 0, WIDTH, HEIGHT, null);
+        panel.getGraphics().clearRect(0, 0, 256, 24);
+        panel.getGraphics().drawString(Double.toString(framerate), 128, 12);
     }
 }

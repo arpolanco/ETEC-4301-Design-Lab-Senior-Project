@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
@@ -15,6 +16,7 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.mygdx.GUI.*;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
 
@@ -28,6 +30,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
     Vector3 touch = new Vector3();
     Joystick j;
     GUILayout gui;
+    private Client client;
 
 
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
@@ -46,6 +49,11 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
     private void init() {
         gui = new GUILayout(viewport);
         j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
+        try{
+            client = new Client();
+        }catch(IOException e){
+            System.exit(-1);
+        }
     }
 
     @Override
@@ -69,11 +77,19 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
 
         renderer.setProjectionMatrix(viewport.getCamera().combined);
         renderer.begin(ShapeType.Filled);
+        //get and draw video frame from server
+        SpriteBatch batch = new SpriteBatch();
+        batch.begin();
+        batch.draw(client.getImage(), 100, 100);
+        batch.end();
+        //I assume this runs at 60fps, so do this asyncronously?
+        //gui.render(image);
+        
 
         gui.render(renderer);
         if(buttonHeld)
         {
-           // System.out.println(touch.toString());
+           //System.out.println(touch.toString());
         }
 
 

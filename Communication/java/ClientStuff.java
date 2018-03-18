@@ -3,6 +3,9 @@ package server;
 import java.awt.image.BufferedImage;
 import java.net.*;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -23,6 +26,9 @@ as the copyright header is left intact.
 
 class ClientStuff extends Thread{
 	private final Socket client;
+        private Socket controller;
+        private DataOutputStream output;
+        private ImageIO imageOutput;
 	public ClientStuff(Socket c){
             client = c;
             System.out.println(client.toString());
@@ -47,11 +53,40 @@ class ClientStuff extends Thread{
                 while(true){
                     time = System.nanoTime();
                     frame = converter.convert(grabber.grab());
-                    removeThis.draw(frame, 1000000.0/((((double)(System.nanoTime()-time)))));
+                    removeThis.draw(frame, 1000000000.0/((((double)(System.nanoTime()-time)))));
+                    sendFrame(frame);
                     //System.out.println(1/(((float)(System.nanoTime()-time))/1000000.0));
                 }
             }catch(IOException e){
                 System.out.println("Error creating socket");
             }
 	}
+        
+        public void attachController(Socket controller_){
+            controller = controller_;
+            try {
+                output = new DataOutputStream(controller.getOutputStream());                
+            } catch (IOException ex) {
+                System.out.println("attachController() error");
+                System.exit(-1);
+            }
+            System.out.print("Phone connected: ");
+            System.out.println(controller);
+        }
+        
+        private void sendFrame(BufferedImage frame){
+            try {
+                if(output == null) return;
+                //seems to freeze here. may be better to send raw bytes? pi has
+                //no involvement here after all
+                
+                //also consider just having libgdx in this project as well. just
+                //send the same object type that you expect on the client side
+                ImageIO.write(frame, "png", output);
+                //flush
+            } catch (IOException ex) {
+                System.out.println("sendFrame() error");
+                System.exit(-1);
+            }
+        }
 }
