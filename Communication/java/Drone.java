@@ -24,12 +24,12 @@ free to use this work in any project (even commercial projects) as long
 as the copyright header is left intact.
 */
 
-class ClientStuff extends Thread{
+class Drone extends Thread{
 	private final Socket client;
         private Socket controller;
         private DataOutputStream output;
         private ImageIO imageOutput;
-	public ClientStuff(Socket c){
+	public Drone(Socket c){
             client = c;
             System.out.println(client.toString());
 	}
@@ -65,7 +65,7 @@ class ClientStuff extends Thread{
         public void attachController(Socket controller_){
             controller = controller_;
             try {
-                output = new DataOutputStream(controller.getOutputStream());                
+                output = new DataOutputStream(controller.getOutputStream());
             } catch (IOException ex) {
                 System.out.println("attachController() error");
                 System.exit(-1);
@@ -75,6 +75,8 @@ class ClientStuff extends Thread{
         }
         
         private void sendFrame(BufferedImage frame){
+            return;
+            /*
             try {
                 if(output == null) return;
                 //seems to freeze here. may be better to send raw bytes? pi has
@@ -88,5 +90,6 @@ class ClientStuff extends Thread{
                 System.out.println("sendFrame() error");
                 System.exit(-1);
             }
+            */
         }
 }
