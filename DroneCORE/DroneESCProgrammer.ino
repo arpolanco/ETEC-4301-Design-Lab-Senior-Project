@@ -85,10 +85,6 @@ int escPin = 9;
 int minPulseRate = 1000;
 int maxPulseRate = 2000;
 int throttleChangeDelay = 20;
-float biasESC1 = 0.8f;
-float biasESC2 = 1.0f;
-float biasESC3 = 1.0f;
-float biasESC4 = 1.2f;
 
 int curr_throttle;
 

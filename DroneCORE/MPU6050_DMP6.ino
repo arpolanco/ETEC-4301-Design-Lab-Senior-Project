@@ -18,9 +18,6 @@ int i = 0;
 float voltageModifier = 5.0f/3.3f;
 float curRoll = 0;
 
-double kp = 1.0f;
-double ki = 1.0f;
-double kd = 1.0f;
 
 void stabSetup() {
   MPUSetup();
@@ -41,8 +38,6 @@ void stabSetup() {
   setESCThrottle(ESC2_BIT | ESC3_BIT | ESC1_BIT | ESC4_BIT, 90);
   delay(100);
   setESCThrottle(ESC2_BIT | ESC3_BIT | ESC1_BIT | ESC4_BIT, throttle);
-  
-  
 }
 
 
@@ -50,7 +45,7 @@ void stabLoop() {
     prevTime = curTime;
     curTime = millis();
     elapsedTime = (curTime - prevTime) / 1000; 
-    throttle = analogRead(POT_PIN)/4;
+    //throttle = analogRead(POT_PIN)/4;
     //Serial.print("Throttle: ");
     //Serial.println(throttle);
     MPULoop();
@@ -86,14 +81,6 @@ void stabLoop() {
     if(curRightThrottle < 0){
       curRightThrottle = 0;
     }
-
-    Serial.print("(Kp, Ki, Kd): ");
-    Serial.print(kp);
-    Serial.print(", ");
-    Serial.print(ki);
-    Serial.print(", ");
-    Serial.print(kd);
-    Serial.println(")");
     
     /*
     Serial.print("Right: ");

@@ -14,6 +14,9 @@ int capValue = 128;
 
 float getPID(float elapsedTime, float curAngle, float targetAngle)
 {
+  if(pid == 0){
+    pidI = 0;
+  }
   //Serial.println(curAngle);
   error = curAngle - targetAngle;
   //Serial.println(error);
