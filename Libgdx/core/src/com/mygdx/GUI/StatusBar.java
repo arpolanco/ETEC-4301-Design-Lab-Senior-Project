@@ -15,8 +15,8 @@ public class StatusBar {
     Vector2 position;
     Rectangle backgroundBar;
     Rectangle frontBar;
-    int baseVal = 100;
-    int curVal = 100;
+    float baseVal = 100;
+    float curVal = 100;
     int width = 100;
     int height = 100;
     Color frontBarColor = Color.RED;
@@ -26,14 +26,14 @@ public class StatusBar {
     {
     }
 
-    public StatusBar(Viewport viewport, Vector2 pos, int width, int height, int baseValue, Color col)
+    public StatusBar(Vector2 pos, int width, int height, float baseValue, Color col)
     {
-        init(viewport, pos, width, height, baseVal, col);
+        init(pos, width, height, baseValue, col);
     }
 
 
 
-    public void init(Viewport viewport, Vector2 pos, int width, int height, int baseVal, Color col) {
+    public void init(Vector2 pos, int width, int height, float baseVal, Color col) {
         this.viewport = viewport;
         position = pos;
         this.width = width;
@@ -41,7 +41,8 @@ public class StatusBar {
         this.baseVal = baseVal;
         setFrontBarColor(col);
         backgroundBar = new Rectangle(pos.x, pos.y, width, height);
-        frontBar = new Rectangle(backgroundBar);
+        frontBar = new Rectangle(pos.x, pos.y, width, height);
+        addVal(-20);
     }
 
     public void update(float delta) {
@@ -66,8 +67,7 @@ public class StatusBar {
         renderer.setColor(Color.LIGHT_GRAY);
         renderer.rect(backgroundBar.getX(),backgroundBar.getY(), backgroundBar.getWidth(),backgroundBar.getHeight());
         renderer.setColor(frontBarColor);
-        renderer.rect(frontBar.getX(), frontBar.getY(), frontBar.getWidth(), frontBar.getHeight());
-        renderer.setColor(frontBarColor);
+        renderer.rect(frontBar.getX(), frontBar.getY(), frontBar.getWidth()*(curVal/baseVal), frontBar.getHeight());
     }
 
 

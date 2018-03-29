@@ -21,6 +21,7 @@ public class Joystick {
     Color frontStickColor;
     Circle backStick;
     Circle frontStick;
+    Circle backCheckCircle;
 
     int radius;
 
@@ -38,8 +39,7 @@ public class Joystick {
         this.initPos = initPos;
         this.radius = radius;
         backStick = new Circle(initPos,(float)radius);
-        System.out.println(backStick.x);
-        System.out.println(backStick.y);
+        backStick = new Circle(initPos,(float)radius);
         frontStickColor = col;
         backStickColor = new Color(frontStickColor);
         backStickColor.mul(.25f);
@@ -49,9 +49,14 @@ public class Joystick {
     public void update(Vector2 touch)
     {
         if(isTouchingStick(touch))
+        {
             frontStick.setPosition(touch);
-        else
+        }
+
+        else{
             frontStick.setPosition(initPos);
+        }
+
 
     }
 

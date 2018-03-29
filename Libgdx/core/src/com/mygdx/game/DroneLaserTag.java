@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
@@ -18,7 +19,7 @@ import com.mygdx.GUI.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
+public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
 
     public static final float WORLD_SIZE = 480.0f;
     private static final int BALL_COUNT = 250;
@@ -27,10 +28,13 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
     ShapeRenderer renderer;
     ExtendViewport viewport;
     //BouncingBall ball;
-    Vector3 touch = new Vector3();
+    Vector3 tp = new Vector3();
     Joystick j;
     GUILayout gui;
+    boolean dragging;
     private Client client;
+    boolean debugServClient = false;
+
 
 
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
@@ -43,17 +47,21 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
         renderer = new ShapeRenderer();
         renderer.setAutoShapeType(true);
         viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        Gdx.input.setInputProcessor(this);
+
     }
 
     private void init() {
         gui = new GUILayout(viewport);
+        Gdx.input.setInputProcessor(this);
         j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
-        try{
-            client = new Client();
-        }catch(IOException e){
-            System.exit(-1);
+        if(debugServClient) {
+            try {
+                client = new Client();
+            } catch (IOException e) {
+                System.exit(-1);
+            }
         }
+
     }
 
     @Override
@@ -77,20 +85,20 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
 
         renderer.setProjectionMatrix(viewport.getCamera().combined);
         renderer.begin(ShapeType.Filled);
-        //get and draw video frame from server
-        SpriteBatch batch = new SpriteBatch();
-        batch.begin();
-        batch.draw(client.getImage(), 100, 100);
-        batch.end();
-        //I assume this runs at 60fps, so do this asyncronously?
-        //gui.render(image);
-        
+        if(debugServClient) {
+            //get and draw video frame from server
+            SpriteBatch batch = new SpriteBatch();
 
-        gui.render(renderer);
-        if(buttonHeld)
-        {
-           //System.out.println(touch.toString());
+            batch.begin();
+            batch.draw(client.getImage(), 100, 100);
+            batch.end();
+            //I assume this runs at 60fps, so do this asyncronously?
+         //   gui.render(image);
         }
+        gui.update(tp);
+        gui.render(renderer);
+
+        //gui.render(renderer);
 
 
         renderer.end();
@@ -104,9 +112,6 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
 
     @Override
     public boolean keyUp(int keycode) {
-        if (keycode == Keys.SPACE) {
-            init();
-        }
         return false;
     }
 
@@ -117,35 +122,27 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        //touch.x = screenX;
-        //touch.y = screenY;
-        if(Gdx.input.isTouched())
-        {
-            touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            viewport.getCamera().unproject(touch);
-            buttonHeld = true;
-        }
-       // System.out.println(touch.toString());
-        return false;
+        if (button != Input.Buttons.LEFT || pointer > 0) return false;
+        viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
+        dragging = true;
+        return true;
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        buttonHeld = false;
         return false;
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        touch.x = screenX;
-        touch.y = screenY;
-        return false;
+        if (!dragging) return false;
+        viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
+        System.out.println(tp.toString());
+        return true;
     }
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        touch.x = screenX;
-        touch.y = screenY;
         return false;
     }
 
