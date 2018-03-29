@@ -1,6 +1,8 @@
 package server;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.net.*;
 import java.io.*;
 import java.util.logging.Level;
@@ -27,8 +29,8 @@ as the copyright header is left intact.
 class Drone extends Thread{
 	private final Socket client;
         private Socket controller;
-        private DataOutputStream output;
-        private ImageIO imageOutput;
+        private OutputStream output;
+        
 	public Drone(Socket c){
             client = c;
             System.out.println(client.toString());
@@ -58,24 +60,35 @@ class Drone extends Thread{
                     //System.out.println(1/(((float)(System.nanoTime()-time))/1000000.0));
                 }
             }catch(IOException e){
-                System.out.println("Error creating socket");
+                System.out.println(e);
+                System.exit(-1);
             }
 	}
         
         public void attachController(Socket controller_){
             controller = controller_;
             try {
-                output = new DataOutputStream(controller.getOutputStream());
+                output = controller.getOutputStream();
             } catch (IOException ex) {
-                System.out.println("attachController() error");
+                System.out.println(ex);
                 System.exit(-1);
             }
             System.out.print("Phone connected: ");
             System.out.println(controller);
         }
         
-        private void sendFrame(BufferedImage frame){
-            return;
+        private void sendFrame(BufferedImage frame) throws IOException{
+            if(output == null) return;
+            System.out.println("Attempting to send frame...");
+            //https://stackoverflow.com/questions/3211156/how-to-convert-image-to-byte-array-in-java#3211685
+            //if it tries to write data, it dies. why?
+            //output.write(((DataBufferByte) frame.getRaster().getDataBuffer()).getData());
+            //maybe don't use sendFrame() every single frame. just do it whenever
+            //the phone client sends a request for it
+            output.write(new byte[500000000]);
+            //output.write(new byte[50]);
+            output.flush();
+            System.out.println("Sent frame");
             /*
             try {
                 if(output == null) return;

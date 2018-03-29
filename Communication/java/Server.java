@@ -49,7 +49,7 @@ class Server{
                 }
             }
 	}catch(IOException e){
-            System.out.println("Error creating socket");
+            System.out.println("Some sort of socket error");
             System.exit(-1);
 	}
     }
