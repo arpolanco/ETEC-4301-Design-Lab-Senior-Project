@@ -2,6 +2,8 @@
 #include <Wire.h>
 #include <Servo.h>
 
+#define MIN_THROT 1290
+#define MAX_THROT 2000
 
 Servo right_front_prop;
 Servo left_front_prop;
@@ -40,25 +42,28 @@ float pid_d_p=0;
 double kp_r=0.61;//3.55
 double ki_r=0.05;//0.005;//0.003
 double kd_r=0.21;//2.05
-double kp_y=3.55;//3.55
-double ki_y=0;//0.005;//0.003
-double kd_y=2.05;//2.05
-double kp_p=3.55;//3.55
-double ki_p=0;//0.005;//0.003
-double kd_p=2.05;//2.05
+double kp_y=0.5;//3.55
+double ki_y=0.05;//0.005;//0.003
+double kd_y=0.2;//2.05
+double kp_p=0.61;//3.55
+double ki_p=0.05;//0.005;//0.003
+double kd_p=0.21;//2.05
 ///////////////////////////////////////////////
 
-double throttle=1300; //initial value of throttle to the motors
+double throttle=MIN_THROT; //initial value of throttle to the motors
+float r_setpoint = 0;
+float p_setpoint = 0;
+float y_setpoint = 0;
 float desired_angle_r = 0; //This is the angle in which we whant the
 float desired_angle_y = 0;                         //balance to stay steady
 float desired_angle_p = 0;
 
 void setup() {
-  Wire.begin(); //begin the wire comunication
-  Wire.beginTransmission(0x68);
-  Wire.write(0x6B);
-  Wire.write(0);
-  Wire.endTransmission(true);
+  //Wire.begin(); //begin the wire comunication
+  //Wire.beginTransmission(0x68);
+  //Wire.write(0x6B);
+  //Wire.write(0);
+  //Wire.endTransmission(true);
   Serial.begin(115200);
   right_front_prop.attach(9); //attatch the right motor to pin 3
   left_front_prop.attach(3);  //attatch the left motor to pin 5
@@ -69,24 +74,210 @@ void setup() {
   /*In order to start up the ESCs we have to send a min value
    * of PWM to them before connecting the battery. Otherwise
    * the ESCs won't start up or enter in the configure mode.
-   * The min value is 1000us and max is 2000us, REMEMBER!*/
+   * The min value is 1000us and max is MAX_THROTus, REMEMBER!*/
+
+  
+  MPUSetup();
+
+  //left_back_prop.writeMicroseconds(MIN_THROT); 
+  //right_back_prop.writeMicroseconds(MIN_THROT);
+  //left_front_prop.writeMicroseconds(MIN_THROT); 
+  //right_front_prop.writeMicroseconds(MIN_THROT);
+
+  delay(3000);
+
+  left_back_prop.writeMicroseconds(MAX_THROT); 
+  right_back_prop.writeMicroseconds(MAX_THROT);
+  left_front_prop.writeMicroseconds(MAX_THROT); 
+  right_front_prop.writeMicroseconds(MAX_THROT);
+
+  Serial.println("Connect Battery...");
+
+  delay(5000);
+
   left_back_prop.writeMicroseconds(1000); 
   right_back_prop.writeMicroseconds(1000);
   left_front_prop.writeMicroseconds(1000); 
   right_front_prop.writeMicroseconds(1000);
+ 
+  int i = 0;
+  while(i++ < 2000){
+    MPULoop();
+  }
   
-  MPUSetup();
-  delay(2000); /*Give some delay, 7s, to have time to connect
-                *the propellers and let everything start up*/ 
+  r_setpoint = getRoll();
+  p_setpoint = getPitch();
+  y_setpoint = getYaw();
+
+  Serial.println("Setpoint Reached!\n4");
+  delay(1000);
+  Serial.println("3");
+  delay(1000);
+  Serial.println("2");
+  delay(1000);
+  Serial.println("1");
+  delay(1000);
+                
 }//end of setup void
 
 void loop() {
 
 /////////////////////////////I M U/////////////////////////////////////
-    timePrev = time;  // the previous time is stored before the actual time read
-    time = millis();  // actual time read
-    elapsedTime = (time - timePrev) / 1000; 
+  timePrev = time;  // the previous time is stored before the actual time read
+  time = millis();  // actual time read
+  elapsedTime = (time - timePrev) / 1000; 
+
+  //Gets the current Angle
+  MPULoop();
+  /*///////////////////////////P I D///////////////////////////////////*/
+  /*Remember that for the balance we will use just one axis. I've choose the x angle
+  to implement the PID with. That means that the x axis of the IMU has to be paralel to
+  the balance*/
   
+  /*First calculate the error between the desired angle and 
+  *the real measured angle*/
+  float true_r = (r_setpoint - getRoll());
+  float true_p = (p_setpoint - getPitch());
+  float true_y = (y_setpoint - getYaw());
+  
+  
+  error_r = true_r - desired_angle_r;
+  error_p = true_p - desired_angle_p;
+  error_y = true_y - desired_angle_y;
+      
+  /*Next the proportional value of the PID is just a proportional constant
+  *multiplied by the error*/
+  
+  //pid_p_r = kp_r*error_r;
+  
+  /*The integral part should only act if we are close to the
+  desired position but we want to fine tune the error. That's
+  why I've made a if operation for an error between -2 and 2 degree.
+  To integrate we just sum the previous integral value with the
+  error multiplied by  the integral constant. This will integrate (increase)
+  the value each loop till we reach the 0 point*/
+  //if(-3 <error_r <3)
+  //{
+  //  pid_i_r = pid_i_r+(ki_r*error_r);  
+  //}
+  
+  /*The last part is the derivate. The derivate acts upon the speed of the error.
+  As we know the speed is the amount of error that produced in a certain amount of
+  time divided by that time. For taht we will use a variable called previous_error.
+  We substract that value from the actual error and divide all by the elapsed time. 
+  Finnaly we multiply the result by the derivate constant*/
+  
+  //pid_d_r = kd_r*((error_r - previous_error_r)/elapsedTime);
+  
+  /*The final PID values is the sum of each of this 3 parts*/
+  //PID_r = pid_p_r + pid_i_r + pid_d_r;
+  
+  /*We know taht the min value of PWM signal is 1000us and the max is MAX_THROT. So that
+  tells us that the PID value can/s oscilate more than -1000 and 1000 because when we
+  have a value of MAX_THROTus the maximum value taht we could sybstract is 1000 and when
+  we have a value of 1000us for the PWM sihnal, the maximum value that we could add is 1000
+  to reach the maximum MAX_THROTus*/
+  //if(PID_r < -700)
+  //{
+  //  PID_r=-700;
+  //}
+  //if(PID_r > 700)
+  //{
+  //  PID_r=700;/
+  //}
+  
+  //previous_error_r = error_r; //Remember to store the previous error.
+  
+  PID_r = get_pid(kp_r, ki_r, kd_r, &pid_i_r, error_r, &previous_error_r);
+  PID_p = get_pid(kp_p, ki_p, kd_p, &pid_i_p, error_p, &previous_error_p);
+  
+  /*Finnaly we calculate the PWM width. We sum the desired throttle and the PID value*/
+  //throttle = 1400;
+  throttle = analogRead(0);
+  throttle = map(throttle, 0, 1023, MIN_THROT, MAX_THROT);
+  
+  //Serial.print("Throttle: ");
+  //Serial.println(throttle);
+  
+  ///ROLL
+  pwmLF = throttle + PID_r;
+  pwmRF = throttle - PID_r;
+  pwmLB = throttle + PID_r;
+  pwmRB = throttle - PID_r;
+  
+  //PITCH
+  pwmLF += PID_p;
+  pwmRF += PID_p;
+  pwmLB -= PID_p;
+  pwmRB -= PID_p;
+  
+  //YAW
+  pwmLF += PID_y;
+  pwmRF -= PID_y;
+  pwmLB -= PID_y;
+  pwmRB += PID_y;
+  
+  /*Once again we map the PWM values to be sure that we won't pass the min
+  and max values. Yes, we've already maped the PID values. But for example, for 
+  throttle value of MIN_THROT, if we sum the max PID value we would have 2300us and
+  that will mess up the ESC.*/
+  //RF
+  if(pwmRF < MIN_THROT)
+  {
+    pwmRF= MIN_THROT;
+  }
+  if(pwmRF > MAX_THROT)
+  {
+    pwmRF=MAX_THROT;
+  }
+  //LF
+  if(pwmLF < MIN_THROT)
+  {
+    pwmLF= MIN_THROT;
+  }
+  if(pwmLF > MAX_THROT)
+  {
+    pwmLF=MAX_THROT;
+  }
+  //RB
+  if(pwmRB < MIN_THROT)
+  {
+    pwmRB = MIN_THROT;
+  }
+  if(pwmRB > MAX_THROT)
+  {
+    pwmRB =MAX_THROT;
+  }
+  //LB
+  if(pwmLB < MIN_THROT)
+  {
+    pwmLB= MIN_THROT;
+  }
+  if(pwmLB > MAX_THROT)
+  {
+    pwmLB =MAX_THROT;
+  }
+  
+  Serial.print("Pitch: ");
+  Serial.print(PID_p);
+  Serial.print("  Roll: ");
+  Serial.print(PID_r);
+  Serial.print("  Throttle: ");
+  Serial.println(throttle);
+  
+  /*Finnaly using the servo function we create the PWM pulses with the calculated
+  width for each pulse*/
+  left_front_prop.writeMicroseconds(pwmLF);
+  right_front_prop.writeMicroseconds(pwmRF);
+  left_back_prop.writeMicroseconds(pwmLB);
+  right_back_prop.writeMicroseconds(pwmRB);
+
+}//end of loop void
+
+
+
+
+/*
   /*The tiemStep is the time that elapsed since the previous loop. 
    * This is the value that we will use in the formulas as "elapsedTime" 
    * in seconds. We work in ms so we haveto divide the value by 1000 
@@ -165,16 +356,8 @@ void loop() {
    
    /*Now we have our angles in degree and values from -10º0 to 100º aprox*/
     //Serial.println(Total_angle[1]);
-    MPULoop();
-
     
-   
-  
-/*///////////////////////////P I D///////////////////////////////////*/
-/*Remember that for the balance we will use just one axis. I've choose the x angle
-to implement the PID with. That means that the x axis of the IMU has to be paralel to
-the balance*/
-//kp_r=analogRead(1);
+    //kp_r=analogRead(1);
 //kp_r = map(kp_r, 0, 627, 0, 400);
 //kp_r /= 100.0f;
 
@@ -185,132 +368,3 @@ the balance*/
 //kd_r=analogRead(3);
 //kd_r = map(kd_r, 0, 627, 0, 400);
 //kd_r /= 100.0f;
-
-/*First calculate the error between the desired angle and 
-*the real measured angle*/
-error_r = getRoll() - desired_angle_r;
-
-
-//Serial.print("ERROR: ");
-//Serial.print(error_r);
-//Serial.print("KP,KI,KD: ");
-//Serial.print(kp_r);
-//Serial.print(", ");
-//Serial.print(ki_r);
-//Serial.print(", ");
-//Serial.println(kd_r);
-    
-/*Next the proportional value of the PID is just a proportional constant
-*multiplied by the error*/
-
-pid_p_r = kp_r*error_r;
-
-/*The integral part should only act if we are close to the
-desired position but we want to fine tune the error. That's
-why I've made a if operation for an error between -2 and 2 degree.
-To integrate we just sum the previous integral value with the
-error multiplied by  the integral constant. This will integrate (increase)
-the value each loop till we reach the 0 point*/
-if(-3 <error_r <3)
-{
-  pid_i_r = pid_i_r+(ki_r*error_r);  
-}
-
-/*The last part is the derivate. The derivate acts upon the speed of the error.
-As we know the speed is the amount of error that produced in a certain amount of
-time divided by that time. For taht we will use a variable called previous_error.
-We substract that value from the actual error and divide all by the elapsed time. 
-Finnaly we multiply the result by the derivate constant*/
-
-pid_d_r = kd_r*((error_r - previous_error_r)/elapsedTime);
-
-/*The final PID values is the sum of each of this 3 parts*/
-PID_r = pid_p_r + pid_i_r + pid_d_r;
-
-/*We know taht the min value of PWM signal is 1000us and the max is 2000. So that
-tells us that the PID value can/s oscilate more than -1000 and 1000 because when we
-have a value of 2000us the maximum value taht we could sybstract is 1000 and when
-we have a value of 1000us for the PWM sihnal, the maximum value that we could add is 1000
-to reach the maximum 2000us*/
-if(PID_r < -700)
-{
-  PID_r=-700;
-}
-if(PID_r > 700)
-{
-  PID_r=700;
-}
-
-previous_error_r = error_r; //Remember to store the previous error.
-
-/*Finnaly we calculate the PWM width. We sum the desired throttle and the PID value*/
-throttle = 1350;
-//throttle = map(throttle, 0, 1023, 1300, 2000);
-
-//Serial.print("Throttle: ");
-//Serial.println(throttle);
-
-pwmLF = throttle - PID_r;
-pwmRF = throttle + PID_r;
-pwmLB = throttle - PID_r;
-pwmRB = throttle + PID_r;
-
-
-/*Once again we map the PWM values to be sure that we won't pass the min
-and max values. Yes, we've already maped the PID values. But for example, for 
-throttle value of 1300, if we sum the max PID value we would have 2300us and
-that will mess up the ESC.*/
-//RF
-if(pwmRF < 1300)
-{
-  pwmRF= 1300;
-}
-if(pwmRF > 2000)
-{
-  pwmRF=2000;
-}
-//LF
-if(pwmLF < 1300)
-{
-  pwmLF= 1300;
-}
-if(pwmLF > 2000)
-{
-  pwmLF=2000;
-}
-//RB
-if(pwmRB < 1300)
-{
-  pwmRB = 1300;
-}
-if(pwmRB > 2000)
-{
-  pwmRB =2000;
-}
-//LB
-if(pwmLB < 1300)
-{
-  pwmLB= 1300;
-}
-if(pwmLB > 2000)
-{
-  pwmLB =2000;
-}
-
-Serial.print("LF, RF, LB, RB: ");
-Serial.print(pwmLF);
-Serial.print(pwmRF);
-Serial.print(pwmLB);
-Serial.println(pwmRB);
-
-Serial.print("Error: ");
-Serial.println(error_r);
-
-/*Finnaly using the servo function we create the PWM pulses with the calculated
-width for each pulse*/
-left_front_prop.writeMicroseconds(pwmLF);
-right_front_prop.writeMicroseconds(pwmRF);
-left_back_prop.writeMicroseconds(pwmLF);
-right_back_prop.writeMicroseconds(pwmRF);
-
-}//end of loop void
