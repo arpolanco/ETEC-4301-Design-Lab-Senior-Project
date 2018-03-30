@@ -33,7 +33,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     GUILayout gui;
     boolean dragging;
     private Client client;
-    boolean debugServClient = false;
+    boolean debugServClient = true;
 
 
 
@@ -79,22 +79,31 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     public void render(float delta) {
         viewport.apply();
 
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        
+        if(debugServClient) {
+            if(client.sendData()){
+                Gdx.gl.glClearColor(0, 0, 1, 1);
+            }else{
+                Gdx.gl.glClearColor(1, 0, 0, 1);
+            }
+            //get and draw video frame from server
+            /*
+            SpriteBatch batch = new SpriteBatch();
+        
+            batch.begin();
+            batch.draw(client.getImage(), 100, 100);
+            batch.end();
+            */
+            //I assume this runs at 60fps, so do this asyncronously?
+         //   gui.render(image);
+        }
+        //Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 
         renderer.setProjectionMatrix(viewport.getCamera().combined);
         renderer.begin(ShapeType.Filled);
-        if(debugServClient) {
-            //get and draw video frame from server
-            SpriteBatch batch = new SpriteBatch();
-
-            batch.begin();
-            batch.draw(client.getImage(), 100, 100);
-            batch.end();
-            //I assume this runs at 60fps, so do this asyncronously?
-         //   gui.render(image);
-        }
+        
         gui.update(tp);
         gui.render(renderer);
 
