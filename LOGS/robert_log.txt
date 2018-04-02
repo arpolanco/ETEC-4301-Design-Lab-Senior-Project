@@ -1,0 +1,5 @@
+Drone Project Log
+
+Friday 3-30-18
+
+Today we worked on getting the Drone to balance itself on all three axes. It seemed like it was working but the battery does not supply enough power to get all three motors to run with enough thrust to lift the drone. We will get another battery to try it out...
