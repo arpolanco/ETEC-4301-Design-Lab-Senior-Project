@@ -6,7 +6,7 @@ import struct
 import threading
 
 try:
-	address = "206.21.94.253" #hardcoded as per our design. may need adjusted for testing
+	address = "206.21.94.238" #hardcoded as per our design. may need adjusted for testing
 	port = 1101
 	host = socket.socket()
 	host.connect((address, port))
@@ -18,7 +18,9 @@ try:
 	#camera.start_recording(buffer, format='h264')
 	#camera.wait_recording() #todo: either find a way to record indefinitely
 	while True:
-		time.sleep(5)
+               #host.send("drone")
+                pass
+		#time.sleep(5)
 	#camera.stop_recording()
 except KeyboardInterrupt:
 	print("dead")
