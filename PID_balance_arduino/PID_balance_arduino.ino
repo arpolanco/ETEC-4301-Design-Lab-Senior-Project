@@ -190,6 +190,7 @@ void loop() {
   
   PID_r = get_pid(kp_r, ki_r, kd_r, &pid_i_r, error_r, &previous_error_r);
   PID_p = get_pid(kp_p, ki_p, kd_p, &pid_i_p, error_p, &previous_error_p);
+  PID_y = get_pid(kp_y, ki_y, kd_y, &pid_i_y, error_y, &previous_error_y);
   
   /*Finnaly we calculate the PWM width. We sum the desired throttle and the PID value*/
   //throttle = 1400;
