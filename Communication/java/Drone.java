@@ -5,6 +5,8 @@ import java.net.*;
 import java.io.*;
 import java.util.Arrays;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -28,8 +30,10 @@ class Drone extends Thread{
         private Socket controller;
         private OutputStream droneOutput;
         private InputStream droneInput;
+        private BufferedReader inputReader;
         private byte[] droneInputBuffer;
         private Semaphore controllerLock = new Semaphore(1);
+        private final int BUFFER_SIZE = 100;
         
 	public Drone(Socket c){
             client = c;
@@ -69,14 +73,25 @@ class Drone extends Thread{
                 //System.exit(-1);
             //}
 	}
-        
-        public void attachController(Socket controller_){
+        public boolean attachController(Socket controller_){
             try {
                 controllerLock.acquire();
                 controller = controller_;
+                if(Arrays.equals(controller.getInetAddress().getAddress(), client.getInetAddress().getAddress())){
+                    System.out.println(Arrays.toString(controller.getInetAddress().getAddress()));
+                    //return false;
+                    //System.exit(-1);
+                }
+                /*
+                if(controller.getLocalAddress().getHostAddress().equals(client.getLocalAddress().getHostAddress())){
+                    System.out.println(controller.getLocalAddress().getHostAddress());
+                    System.exit(-1);
+                }
+                */
                 try {
                     droneOutput = controller.getOutputStream();
-                    droneInput = controller.getInputStream();                
+                    droneInput = new BufferedInputStream(controller.getInputStream(), BUFFER_SIZE);
+                    inputReader = new BufferedReader(new InputStreamReader(droneInput));
                 } catch (IOException ex) {
                     System.out.println(ex);
                     System.exit(-1);
@@ -89,6 +104,7 @@ class Drone extends Thread{
             }
             
             controllerLock.release();
+            return true;
         }
         
         private void receiveData(){
@@ -104,17 +120,13 @@ class Drone extends Thread{
             }
             controllerLock.release();
             
-            droneInputBuffer = new byte[10]; //clear buffer
-            int bytesRead = 0;
-            boolean gotAnything = false;
-            try{
-            while(bytesRead != -1 ){
-                //System.out.println("Checking for input...");
-                if(droneInput.available() == 0) break;
-                bytesRead = droneInput.read(droneInputBuffer);
-                if(bytesRead != -1) gotAnything = true;
-            }
-            }catch(IOException ex){
+            //boolean gotAnything = false;
+            //problem: if drone connects as drone and phone connects as phone, only
+            //the phone's constructor message is received. if the phone connects as
+            //both things, the messages are received as normal
+            try {
+                System.out.println(inputReader.readLine());
+            } catch (IOException ex) {
                 System.out.println(ex);
                 System.exit(-1);
             }
@@ -122,8 +134,12 @@ class Drone extends Thread{
             //open up a second, identical socket for duplex communication
             //see if sending messages the other way still works
             //seems to work if phone connects as pi and controller for some reason
-            if(gotAnything) System.out.println(Arrays.toString(droneInputBuffer));
+            //if(gotAnything) System.out.println(new String(droneInputBuffer));
             //need to decide order of data sent and received
+        }
+        
+        public InputStream bob(){
+            return droneInput;
         }
         
         private void sendFrame(BufferedImage frame) throws IOException{

@@ -57,6 +57,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         if(debugServClient) {
             try {
                 client = new Client();
+                client.start();
             } catch (IOException e) {
                 System.exit(-1);
             }
@@ -96,8 +97,9 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
             */
             //I assume this runs at 60fps, so do this asyncronously?
          //   gui.render(image);
+        }else{
+            Gdx.gl.glClearColor(0, 0, 0, 1);
         }
-        //Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 
@@ -106,9 +108,6 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         
         gui.update(tp);
         gui.render(renderer);
-
-        //gui.render(renderer);
-
 
         renderer.end();
     }

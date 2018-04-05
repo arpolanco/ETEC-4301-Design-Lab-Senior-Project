@@ -24,7 +24,7 @@ import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.net.SocketHints;
 */
 
-public class Client {
+public class Client extends Thread{
     private Socket socket;
     private InputStream input;
     private OutputStream output;
@@ -34,7 +34,7 @@ public class Client {
     Protocol protocol;
     SocketHints hints;
     
-    final String HOST = "206.21.94.253";
+    final String HOST = "206.21.94.238";
     final int PORT = 1101;
     
     public Client() throws IOException{
@@ -49,6 +49,8 @@ public class Client {
         socket = new Socket(HOST, PORT);
         input = socket.getInputStream();
         output = socket.getOutputStream();
+        output.write("phone\n".getBytes());
+        output.flush();
         //buffer = new byte[640 * 480 * 5];
         //shout type to server
     }
@@ -73,9 +75,7 @@ public class Client {
         if (output == null) return false;
         try {
             //output.write(data);
-            output.write(65);
-            output.write(66);
-            output.write(67);
+            output.write("I AM A CONTROLLER\n".getBytes());
             output.flush();
             return true;
         } catch (IOException ex) {

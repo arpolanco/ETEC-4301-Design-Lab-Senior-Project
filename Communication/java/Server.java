@@ -31,6 +31,7 @@ class Server{
                 Socket newPhone = socket.accept();
                 drones.get(currentControllers).attachController(newPhone);
                 currentControllers++;
+                
             }
             
             System.out.println("Max controllers reached, joining all drone threads");
