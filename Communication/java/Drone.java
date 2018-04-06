@@ -32,11 +32,14 @@ class Drone extends Thread{
         private InputStream droneInput;
         private BufferedReader inputReader;
         private byte[] droneInputBuffer;
-        private Semaphore controllerLock = new Semaphore(1);
-        private final int BUFFER_SIZE = 100;
+        private final Semaphore controllerLock = new Semaphore(1);
+        private final int BUFFER_SIZE = 4096;
+        private final int ID;
         
-	public Drone(Socket c){
+	public Drone(Socket c, int id_){
             client = c;
+            ID = id_;
+            System.out.print("Drone: ");
             System.out.println(client.toString());
 	}
         
@@ -58,11 +61,26 @@ class Drone extends Thread{
                     nothing gets displayed at first, but then many frames flash
                     at once
                 */
+                long time;
+                byte bob = 'X';
                 while(true){
                     /*
                     time = System.nanoTime();
                     frame = converter.convert(grabber.grab());
                     removeThis.draw(frame, 1000000000.0/((((double)(System.nanoTime()-time)))));
+                    */
+                    /*
+                    time = System.nanoTime();
+                    System.out.println("Waiting to receive data from phone...");
+                    while(!receiveData()){
+                        //
+                    }
+                    System.out.println("Sending data to drone...");
+                    sendData(bob);
+                    System.out.println("Waiting to receive data from drone...");
+                    receiveDataFromDrone();
+                    System.out.print("Time for trip: ");
+                    System.out.println((((float)(System.nanoTime()-time))/1000000000.0));
                     */
                     receiveData();
                     //sendFrame(frame);
@@ -73,16 +91,38 @@ class Drone extends Thread{
                 //System.exit(-1);
             //}
 	}
+        
+        private void sendData(byte bob){
+            try {
+                client.getOutputStream().write(bob);
+                client.getOutputStream().flush();
+            } catch (IOException ex) {
+                System.out.println(ex);
+                System.exit(-1);
+            }
+            
+        }
+        
+        private void receiveDataFromDrone(){
+            try {
+                System.out.println(new BufferedReader(new InputStreamReader(new BufferedInputStream(client.getInputStream(), BUFFER_SIZE))).readLine());
+            } catch (IOException ex) {
+                System.out.println(ex);
+                System.exit(-1);
+            }
+        }
+        
         public boolean attachController(Socket controller_){
             try {
                 controllerLock.acquire();
                 controller = controller_;
+                /*
                 if(Arrays.equals(controller.getInetAddress().getAddress(), client.getInetAddress().getAddress())){
                     System.out.println(Arrays.toString(controller.getInetAddress().getAddress()));
+                    //controllerLock.release();
                     //return false;
                     //System.exit(-1);
                 }
-                /*
                 if(controller.getLocalAddress().getHostAddress().equals(client.getLocalAddress().getHostAddress())){
                     System.out.println(controller.getLocalAddress().getHostAddress());
                     System.exit(-1);
@@ -96,7 +136,7 @@ class Drone extends Thread{
                     System.out.println(ex);
                     System.exit(-1);
                 }
-                System.out.print("Phone connected: ");
+                System.out.print("Phone: ");
                 System.out.println(controller);
             } catch (InterruptedException ex) {
                 System.out.println(ex);
@@ -107,7 +147,7 @@ class Drone extends Thread{
             return true;
         }
         
-        private void receiveData(){
+        private boolean receiveData(){
             try {
                 controllerLock.acquire();
             } catch (InterruptedException ex) {
@@ -116,7 +156,7 @@ class Drone extends Thread{
             }
             if(controller == null){
                 controllerLock.release();
-                return;
+                return false;
             }
             controllerLock.release();
             
@@ -130,6 +170,7 @@ class Drone extends Thread{
                 System.out.println(ex);
                 System.exit(-1);
             }
+            return true;
             //possible solutions:
             //open up a second, identical socket for duplex communication
             //see if sending messages the other way still works

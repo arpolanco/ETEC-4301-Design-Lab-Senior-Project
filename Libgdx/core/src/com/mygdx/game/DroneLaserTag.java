@@ -54,13 +54,9 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         gui = new GUILayout(viewport);
         Gdx.input.setInputProcessor(this);
         j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
-        if(debugServClient) {
-            try {
-                client = new Client();
-                client.start();
-            } catch (IOException e) {
-                System.exit(-1);
-            }
+        if(debugServClient && client == null) {
+            client = new Client();
+            client.start();
         }
 
     }

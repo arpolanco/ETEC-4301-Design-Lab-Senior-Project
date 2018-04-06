@@ -5,15 +5,66 @@ import java.io.*;
 import java.util.ArrayList;
 
 class Server{
+    final static int TOTAL_DRONES = 1; //should be 4 in the final thing
+    final static int BUFFER_SIZE = 4096;
+    static ArrayList<Drone> drones = new ArrayList<>();
+    static int currentDrone = -1;
+    static int currentControllers = 0;
+    
+    public static void handlePhone(Socket phone) throws IOException{
+        System.out.println("Phone connected. Checking for drones...");
+        if(currentDrone == -1){
+            System.out.println("No drones online. Closing this connection");
+            phone.close();
+        }else if(currentControllers == TOTAL_DRONES){
+            System.out.println("All the slots are taken, sorry");
+            phone.close();
+        }else{
+            drones.get(currentDrone).attachController(phone);
+            currentControllers++;
+        }        
+    }
+    
+    public static void handleDrone(Socket drone) throws IOException{
+        System.out.println("Drone connected. Checking if max reached...");
+        if(currentDrone == TOTAL_DRONES){
+            System.out.println("Max drones reached. Closing this connection...");
+            drone.close();
+        }else{
+            Drone droneyBoy = new Drone(drone, currentDrone);
+            droneyBoy.start();
+            drones.add(droneyBoy);
+            currentDrone++;
+        }
+    }
+    
     public static void main(String[] args){
-        final int TOTAL_DRONES = 1; //should be 4 in the final thing
-        ArrayList<Drone> drones = new ArrayList<>();
-        int currentDrones = 0;
-        int currentControllers = 0;
 	try{
-	//arraylist of threads
-        ServerSocket socket = new ServerSocket(1101);
-            System.out.println(socket.toString());
+            //arraylist of threads
+            ServerSocket host = new ServerSocket(1101);
+            Socket newConnection;
+            BufferedReader connectionTypeReader;
+            
+            String connectionType;
+            System.out.println(host.toString());
+
+            while(true){
+                newConnection = host.accept();
+                connectionTypeReader = new BufferedReader(new InputStreamReader(new BufferedInputStream(newConnection.getInputStream(), BUFFER_SIZE)));
+                connectionType = connectionTypeReader.readLine(); //blocking
+                switch (connectionType) {
+                    case "DRONE":
+                        handleDrone(newConnection);
+                        break;
+                    case "PHONE":
+                        handlePhone(newConnection);
+                        break;
+                    default:
+                        System.out.println("Unknown connection type");
+                        break;
+                }
+            }
+            /*
             while(currentDrones < TOTAL_DRONES){
                 Socket newDrone = socket.accept();
                 System.out.println("Drone connected");
@@ -22,7 +73,7 @@ class Server{
                 drones.add(droneThread);
                 currentDrones++;
             }
-            
+
             //probably have a mutex to prevent phone from connecting as pi
             System.out.println("Max drones reached, now looking for controllers");
             while(currentControllers < currentDrones){
@@ -31,9 +82,9 @@ class Server{
                 Socket newPhone = socket.accept();
                 drones.get(currentControllers).attachController(newPhone);
                 currentControllers++;
-                
+
             }
-            
+
             System.out.println("Max controllers reached, joining all drone threads");
             //probably have some check for if a phone disconnects. if disconnect,
             //check for reconnect and attach to the drone missing a controller
@@ -45,8 +96,9 @@ class Server{
                     System.exit(-1);
                 }
             }
+            */
 	}catch(IOException e){
-            System.out.println("Some sort of socket error");
+            System.out.println(e);
             System.exit(-1);
 	}
     }
