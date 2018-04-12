@@ -1,12 +1,13 @@
 package server;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.net.*;
 import java.io.*;
-import java.util.Arrays;
-import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -28,12 +29,7 @@ as the copyright header is left intact.
 class Drone extends Thread{
 	private final Socket client;
         private Socket controller;
-        private OutputStream droneOutput;
-        private InputStream droneInput;
-        private BufferedReader inputReader;
-        private byte[] droneInputBuffer;
-        private Semaphore controllerLock = new Semaphore(1);
-        private final int BUFFER_SIZE = 100;
+        private OutputStream output;
         
 	public Drone(Socket c){
             client = c;
@@ -42,10 +38,9 @@ class Drone extends Thread{
         
         @Override
 	public void run(){
-            //try{
+            try{
                 VideoStream removeThis = new VideoStream(640, 480);
-                /*
-                InputStream stream = client.getInputStream();                
+                InputStream stream = client.getInputStream();
                 FrameGrabber grabber = new FFmpegFrameGrabber(stream);
                 Java2DFrameConverter converter = new Java2DFrameConverter();
                 BufferedImage frame;
@@ -53,97 +48,36 @@ class Drone extends Thread{
                 grabber.setFormat("H264");
                 grabber.start();
                 long time;
-                */
                 /*  todo: there's a sort of "build up" of frames at first where
                     nothing gets displayed at first, but then many frames flash
                     at once
                 */
                 while(true){
-                    /*
                     time = System.nanoTime();
                     frame = converter.convert(grabber.grab());
                     removeThis.draw(frame, 1000000000.0/((((double)(System.nanoTime()-time)))));
-                    */
-                    receiveData();
-                    //sendFrame(frame);
+                    sendFrame(frame);
                     //System.out.println(1/(((float)(System.nanoTime()-time))/1000000.0));
                 }
-            //}catch(IOException e){
-                //System.out.println(e);
-                //System.exit(-1);
-            //}
+            }catch(IOException e){
+                System.out.println(e);
+                System.exit(-1);
+            }
 	}
-        public boolean attachController(Socket controller_){
-            try {
-                controllerLock.acquire();
-                controller = controller_;
-                if(Arrays.equals(controller.getInetAddress().getAddress(), client.getInetAddress().getAddress())){
-                    System.out.println(Arrays.toString(controller.getInetAddress().getAddress()));
-                    //return false;
-                    //System.exit(-1);
-                }
-                /*
-                if(controller.getLocalAddress().getHostAddress().equals(client.getLocalAddress().getHostAddress())){
-                    System.out.println(controller.getLocalAddress().getHostAddress());
-                    System.exit(-1);
-                }
-                */
-                try {
-                    droneOutput = controller.getOutputStream();
-                    droneInput = new BufferedInputStream(controller.getInputStream(), BUFFER_SIZE);
-                    inputReader = new BufferedReader(new InputStreamReader(droneInput));
-                } catch (IOException ex) {
-                    System.out.println(ex);
-                    System.exit(-1);
-                }
-                System.out.print("Phone connected: ");
-                System.out.println(controller);
-            } catch (InterruptedException ex) {
-                System.out.println(ex);
-                System.exit(-1);
-            }
-            
-            controllerLock.release();
-            return true;
-        }
         
-        private void receiveData(){
+        public void attachController(Socket controller_){
+            controller = controller_;
             try {
-                controllerLock.acquire();
-            } catch (InterruptedException ex) {
-                System.out.println(ex);
-                System.exit(-1);
-            }
-            if(controller == null){
-                controllerLock.release();
-                return;
-            }
-            controllerLock.release();
-            
-            //boolean gotAnything = false;
-            //problem: if drone connects as drone and phone connects as phone, only
-            //the phone's constructor message is received. if the phone connects as
-            //both things, the messages are received as normal
-            try {
-                System.out.println(inputReader.readLine());
+                output = controller.getOutputStream();
             } catch (IOException ex) {
                 System.out.println(ex);
                 System.exit(-1);
             }
-            //possible solutions:
-            //open up a second, identical socket for duplex communication
-            //see if sending messages the other way still works
-            //seems to work if phone connects as pi and controller for some reason
-            //if(gotAnything) System.out.println(new String(droneInputBuffer));
-            //need to decide order of data sent and received
-        }
-        
-        public InputStream bob(){
-            return droneInput;
+            System.out.print("Phone connected: ");
+            System.out.println(controller);
         }
         
         private void sendFrame(BufferedImage frame) throws IOException{
-            /*
             if(output == null) return;
             System.out.println("Attempting to send frame...");
             //https://stackoverflow.com/questions/3211156/how-to-convert-image-to-byte-array-in-java#3211685
@@ -155,7 +89,6 @@ class Drone extends Thread{
             //output.write(new byte[50]);
             output.flush();
             System.out.println("Sent frame");
-            */
             /*
             try {
                 if(output == null) return;

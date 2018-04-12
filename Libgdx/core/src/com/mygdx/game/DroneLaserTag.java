@@ -7,6 +7,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -33,7 +34,9 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     GUILayout gui;
     boolean dragging;
     private Client client;
-    boolean debugServClient = true;
+    SpriteBatch spriteBatch;
+    Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
+    boolean debugServClient = false;
 
 
 
@@ -47,21 +50,17 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         renderer = new ShapeRenderer();
         renderer.setAutoShapeType(true);
         viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
     }
 
     private void init() {
         gui = new GUILayout(viewport);
         Gdx.input.setInputProcessor(this);
         j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
-        if(debugServClient) {
-            try {
-                client = new Client();
-                client.start();
-            } catch (IOException e) {
-                System.exit(-1);
-            }
+        if(debugServClient && client == null) {
+            client = new Client();
+            client.start();
         }
+        spriteBatch = new SpriteBatch();
 
     }
 
@@ -74,13 +73,23 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     @Override
     public void dispose() {
         renderer.dispose();
+        spriteBatch.dispose();
     }
 
     @Override
     public void render(float delta) {
         viewport.apply();
 
-        
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+
+
+        //spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
+        //spriteBatch.begin();
+        renderer.setProjectionMatrix(viewport.getCamera().combined);
+        renderer.begin(ShapeType.Filled);
+
         if(debugServClient) {
             if(client.sendData()){
                 Gdx.gl.glClearColor(0, 0, 1, 1);
@@ -88,9 +97,15 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
                 Gdx.gl.glClearColor(1, 0, 0, 1);
             }
             //get and draw video frame from server
+
+            if(debugServClient)
+            {
+                spriteBatch.begin();
+                spriteBatch.draw(client.getImage(), 100, 100);
+                spriteBatch.end();
+            }
+
             /*
-            SpriteBatch batch = new SpriteBatch();
-        
             batch.begin();
             batch.draw(client.getImage(), 100, 100);
             batch.end();
@@ -100,15 +115,22 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         }else{
             Gdx.gl.glClearColor(0, 0, 0, 1);
         }
+        gui.imageFeed(testImg);
+        gui.update(tp);
+        //spriteBatch.begin();
+        gui.render(renderer, spriteBatch);
+        //spriteBatch.begin();
+        //spriteBatch.draw(, 100, 100);
+        //spriteBatch.end();
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
-        renderer.setProjectionMatrix(viewport.getCamera().combined);
-        renderer.begin(ShapeType.Filled);
-        
         gui.update(tp);
-        gui.render(renderer);
+        //gui.render(renderer);
 
+
+        //gui.render(renderer);
+
+        spriteBatch.end();
         renderer.end();
     }
 
