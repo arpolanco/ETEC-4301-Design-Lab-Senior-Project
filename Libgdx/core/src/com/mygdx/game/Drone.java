@@ -53,6 +53,18 @@ public class Drone {
             return false;
     }
 
+    public boolean shoot()
+    {
+        return false;
+    }
+
+    public boolean didDroneHit()
+    {
+        //need to figure out how to grab the ir stuff from the server
+
+        return false;
+    }
+
 
     public void setPosition(Vector3 position) {
         this.position = position;

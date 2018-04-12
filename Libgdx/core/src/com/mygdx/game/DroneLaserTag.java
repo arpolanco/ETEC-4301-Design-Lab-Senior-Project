@@ -7,6 +7,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -34,6 +35,8 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     boolean dragging;
     private Client client;
     boolean debugServClient = false;
+    SpriteBatch spriteBatch;
+    Texture testImg = new Texture(Gdx.files.internal("ic_launcher.png"));
 
 
 
@@ -73,6 +76,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     @Override
     public void dispose() {
         renderer.dispose();
+        spriteBatch.dispose();
     }
 
     @Override
@@ -83,24 +87,35 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 
+
+        spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
+        spriteBatch.begin();
         renderer.setProjectionMatrix(viewport.getCamera().combined);
         renderer.begin(ShapeType.Filled);
         if(debugServClient) {
             //get and draw video frame from server
-            SpriteBatch batch = new SpriteBatch();
 
-            batch.begin();
-            batch.draw(client.getImage(), 100, 100);
-            batch.end();
+
+            spriteBatch.begin();
+            spriteBatch.draw(client.getImage(), 100, 100);
+            spriteBatch.end();
             //I assume this runs at 60fps, so do this asyncronously?
          //   gui.render(image);
         }
+        gui.imageFeed(testImg);
         gui.update(tp);
-        gui.render(renderer);
+        spriteBatch.begin();
+        gui.render(renderer, spriteBatch);
+        //spriteBatch.begin();
+        //spriteBatch.draw(, 100, 100);
+        //spriteBatch.end();
+
+
+
 
         //gui.render(renderer);
 
-
+        spriteBatch.end();
         renderer.end();
     }
 

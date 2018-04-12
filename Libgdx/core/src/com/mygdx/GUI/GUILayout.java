@@ -2,6 +2,8 @@ package com.mygdx.GUI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -19,6 +21,8 @@ public class GUILayout{
     StatusBar healthBar;
     StatusBar shootBar;
     int joyStickRad;
+    Texture image;
+
 
 
 
@@ -41,6 +45,7 @@ public class GUILayout{
     }
 
 
+
     public void update(Vector3 input) {
 
         leftJoystick.update(new Vector2(input.x,input.y));
@@ -50,14 +55,20 @@ public class GUILayout{
 
 
 
-    public void render(ShapeRenderer renderer) {
+
+    public void render(ShapeRenderer renderer, SpriteBatch spriteBatch ) {
         //HealthBar.render(renderer);
         //ShootBar.render(renderer);
+        spriteBatch.draw(image,0,0,0,0);
         leftJoystick.render(renderer);
         rightJoystick.render(renderer);
         healthBar.render(renderer);
         shootBar.render(renderer);
         //renderer.line(position, new Vector2((position.x+temp.x * 20), (position.y+temp.y * 20)));
+    }
+
+    public void imageFeed(Texture img) {
+        image = img;
     }
 }
 
