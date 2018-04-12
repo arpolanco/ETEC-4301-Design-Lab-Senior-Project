@@ -34,9 +34,9 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     GUILayout gui;
     boolean dragging;
     private Client client;
-    boolean debugServClient = false;
     SpriteBatch spriteBatch;
-    Texture testImg = new Texture(Gdx.files.internal("ic_launcher.png"));
+    Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
+    boolean debugServClient = false;
 
 
 
@@ -50,20 +50,17 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         renderer = new ShapeRenderer();
         renderer.setAutoShapeType(true);
         viewport = new ExtendViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
     }
 
     private void init() {
         gui = new GUILayout(viewport);
         Gdx.input.setInputProcessor(this);
         j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
-        if(debugServClient) {
-            try {
-                client = new Client();
-            } catch (IOException e) {
-                System.exit(-1);
-            }
+        if(debugServClient && client == null) {
+            client = new Client();
+            client.start();
         }
+        spriteBatch = new SpriteBatch();
 
     }
 
@@ -88,29 +85,47 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
 
 
 
-        spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
-        spriteBatch.begin();
+        //spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
+        //spriteBatch.begin();
         renderer.setProjectionMatrix(viewport.getCamera().combined);
         renderer.begin(ShapeType.Filled);
+
         if(debugServClient) {
+            if(client.sendData()){
+                Gdx.gl.glClearColor(0, 0, 1, 1);
+            }else{
+                Gdx.gl.glClearColor(1, 0, 0, 1);
+            }
             //get and draw video frame from server
 
+            if(debugServClient)
+            {
+                spriteBatch.begin();
+                spriteBatch.draw(client.getImage(), 100, 100);
+                spriteBatch.end();
+            }
 
-            spriteBatch.begin();
-            spriteBatch.draw(client.getImage(), 100, 100);
-            spriteBatch.end();
+            /*
+            batch.begin();
+            batch.draw(client.getImage(), 100, 100);
+            batch.end();
+            */
             //I assume this runs at 60fps, so do this asyncronously?
          //   gui.render(image);
+        }else{
+            Gdx.gl.glClearColor(0, 0, 0, 1);
         }
         gui.imageFeed(testImg);
         gui.update(tp);
-        spriteBatch.begin();
+        //spriteBatch.begin();
         gui.render(renderer, spriteBatch);
         //spriteBatch.begin();
         //spriteBatch.draw(, 100, 100);
         //spriteBatch.end();
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-
+        gui.update(tp);
+        //gui.render(renderer);
 
 
         //gui.render(renderer);
