@@ -42,22 +42,22 @@ float pid_i_y=0;
 float pid_i_p=0;
 
 /////////////////PID CONSTANTS/////////////////
-double kp_r=0.61;//3.55
+double kp_r=0.75;//3.55
 double ki_r=0.05;//0.005;//0.003
-double kd_r=0.21;//2.05
+double kd_r=0.30;//2.05
 double kp_y=0.5;//3.55
 double ki_y=0.05;//0.005;//0.003
 double kd_y=0.2;//2.05
-double kp_p=0.61;//3.55
+double kp_p=0.75;//3.55
 double ki_p=0.05;//0.005;//0.003
-double kd_p=0.21;//2.05
+double kd_p=0.30;//2.05
 ///////////////////////////////////////////////
 
 double throttle=MIN_THROT; //initial value of throttle to the motors
 float r_setpoint = 0;
 float p_setpoint = 0;
 float y_setpoint = 0;
-float flight_values[] = {7, 7, 0}; //This contains the angles that we want everything set to
+float flight_values[] = {7, 7, 7}; //This contains the angles that we want everything set to
 float desired_angle_p = 0;
 float desired_angle_r = 0;
 float desired_angle_y = 0;
@@ -85,16 +85,16 @@ void setup() {
   //left_front_prop.writeMicroseconds(MIN_THROT); 
   //right_front_prop.writeMicroseconds(MIN_THROT);
 
-  delay(3000);
+  //delay(3000);
 
-  left_back_prop.writeMicroseconds(MAX_THROT); 
-  right_back_prop.writeMicroseconds(MAX_THROT);
-  left_front_prop.writeMicroseconds(MAX_THROT); 
-  right_front_prop.writeMicroseconds(MAX_THROT);
+  //left_back_prop.writeMicroseconds(MAX_THROT); 
+  //right_back_prop.writeMicroseconds(MAX_THROT);
+  //left_front_prop.writeMicroseconds(MAX_THROT); 
+  //right_front_prop.writeMicroseconds(MAX_THROT);
 
-  Serial.println("Connect Battery.\n");
+  //Serial.println("Connect Battery.\n");
 
-  delay(4500);
+  //delay(4500);
 
   left_back_prop.writeMicroseconds(1000); 
   right_back_prop.writeMicroseconds(1000);
@@ -146,8 +146,12 @@ void loop() {
         //Quit!
         Serial.println("Quit to Idle Mode!");
         mode = TUNING;
+        left_front_prop.writeMicroseconds(1000);
+        right_front_prop.writeMicroseconds(1000);
+        left_back_prop.writeMicroseconds(1000);
+        right_back_prop.writeMicroseconds(1000);
         return;
-      }else if(input&0x30)
+      }else if(input&0x30 == 0x30)
       {
         Serial.println("Fire!");
       }else{
@@ -193,8 +197,8 @@ void loop() {
     PID_p = get_pid(kp_p, ki_p, kd_p, &pid_i_p, error_p, &previous_error_p);
     PID_y = get_pid(kp_y, ki_y, kd_y, &pid_i_y, error_y, &previous_error_y);
     
-    //throttle = analogRead(0);
-    //throttle = map(throttle, 0, 1023, MIN_THROT, MAX_THROT);
+    throttle = analogRead(0);
+    throttle = map(throttle, 0, 1023, MIN_THROT, MAX_THROT);
     
     ///ROLL
     pwmLF = throttle + PID_r;
@@ -250,9 +254,9 @@ void loop() {
     {
       pwmLB =MAX_THROT;
     }
-    
-    Serial.print("  Elapsed Time: ");
-    Serial.print(elapsedTime);
+
+    Serial.print("  Throt: ");
+    Serial.print(throttle);
 
     Serial.print("  P: ");
     Serial.print(desired_angle_p);
@@ -279,6 +283,18 @@ void loop() {
       {
         Serial.println("Entering Flight Mode!");
         mode = FLIGHT;
+      }
+      if(input == 'k'){
+        //k change mode
+        input = Serial.read();
+        if(input == 'p'){
+          //pitch
+          input = Serial.read();
+        } else if(input == 'r'){
+          //roll
+        } else if(input == 'y'){
+          //pitch
+        }
       }
     }
   }
