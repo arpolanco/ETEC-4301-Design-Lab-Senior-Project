@@ -16,6 +16,11 @@ public class Drone {
     float roll; //this is an angle
     float pitch; //
     float yaw; //
+    
+    public final float maxThrottle = 360; //arbitrary value for testing
+    public final float maxRoll = 40; //ditto
+    public final float maxPitch = 40; //ditto
+    public final float maxYaw = 40; //ditto
 
     public Drone()
     {
@@ -51,18 +56,6 @@ public class Drone {
             return true;
         else
             return false;
-    }
-
-    public boolean shoot()
-    {
-        return false;
-    }
-
-    public boolean didDroneHit()
-    {
-        //need to figure out how to grab the ir stuff from the server
-
-        return false;
     }
 
 

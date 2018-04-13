@@ -34,11 +34,18 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     GUILayout gui;
     boolean dragging;
     private Client client;
+    Drone drone = new Drone();
     SpriteBatch spriteBatch;
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
+    
     boolean debugServClient = false;
-
-
+    
+    final int THRUST = 0x80;    //0b10000000;
+    final int QUIT = 0x40;   //0b01000000;
+    final int PITCH = 0x0;   //0b00000000;
+    final int ROLL = 0x8;   //0b00001000;
+    final int YAW = 0x10;    //0b00010000;
+    final int FIRE = 0x18;   //0b00011000;
 
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
 
@@ -91,19 +98,12 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         renderer.begin(ShapeType.Filled);
 
         if(debugServClient) {
-            if(client.sendData()){
+            if(client.sendData()){ //need to do this every x frames so the arduino can handle the traffic
                 Gdx.gl.glClearColor(0, 0, 1, 1);
             }else{
                 Gdx.gl.glClearColor(1, 0, 0, 1);
             }
             //get and draw video frame from server
-
-            if(debugServClient)
-            {
-                spriteBatch.begin();
-                spriteBatch.draw(client.getImage(), 100, 100);
-                spriteBatch.end();
-            }
 
             /*
             batch.begin();
@@ -179,5 +179,47 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     @Override
     public boolean scrolled(int amount) {
         return false;
+    }
+    
+    public void sendTelemetryByte(){
+        //left stick X: yaw
+        //left stick Y: thrust
+        //right stick X: pitch
+        //right stick Y: roll
+        byte telemetry = 0;
+        int action = THRUST; //just testing ok
+        switch (action){ //need proper way to define this
+            case THRUST:
+                telemetry |= THRUST;
+                float throttle = drone.getThrottle();
+                throttle /= drone.maxThrottle;
+                telemetry |= (byte)(0x3f*throttle); //0b00111111;
+                break;
+            case YAW:
+                telemetry |= YAW;
+                float yaw = drone.getYaw();
+                yaw /= drone.maxYaw;
+                telemetry |= (byte)(0xf*yaw); //0b00001111
+                break;
+            case PITCH:
+                telemetry |= PITCH;
+                float pitch = drone.getPitch();
+                pitch /= drone.maxPitch;
+                telemetry |= (byte)(0xf*pitch); //0b00001111
+                break;
+            case ROLL:
+                telemetry |= ROLL;
+                float roll = drone.getRoll();
+                roll /= drone.maxRoll;
+                telemetry |= (byte)(0xf*roll); //0b00001111
+                break;
+            case FIRE:
+                telemetry |= FIRE;
+                break;
+            case QUIT:
+                telemetry |= QUIT;
+                break;
+        }
+        client.sendByte(telemetry);
     }
 }
