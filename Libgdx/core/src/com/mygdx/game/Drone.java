@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import java.util.Random;
 
 public class Drone {
 
@@ -17,10 +18,12 @@ public class Drone {
     float pitch; //
     float yaw; //
     
-    public final float maxThrottle = 360; //arbitrary value for testing
-    public final float maxRoll = 40; //ditto
-    public final float maxPitch = 40; //ditto
-    public final float maxYaw = 40; //ditto
+    public final float maxThrottle = 100.0f; //based on joystick size on my desktop
+    public final float maxRoll = 100.0f; //based on joystick size on my desktop
+    public final float maxPitch = 100.0f; //based on joystick size on my desktop
+    public final float maxYaw = 100.0f; //based on joystick size on my desktop
+    
+    final Random testData = new Random(); //delete this, for testing purposes
 
     public Drone()
     {
@@ -104,7 +107,8 @@ public class Drone {
     }
 
     public float getThrottle() {
-        return throttle;
+        return testData.nextFloat() * maxThrottle; //for testing, pls delete
+        //return throttle;
     }
 
     public void setThrottle(float throttle) {
@@ -112,7 +116,8 @@ public class Drone {
     }
 
     public float getRoll() {
-        return roll;
+        return testData.nextFloat() * maxRoll; //for testing, pls delete
+        //return roll;
     }
 
     public void setRoll(float roll) {
@@ -120,7 +125,8 @@ public class Drone {
     }
 
     public float getPitch() {
-        return pitch;
+        return testData.nextFloat() * maxPitch; //for testing, pls delete
+        //return pitch;
     }
 
     public void setPitch(float pitch) {
@@ -128,7 +134,8 @@ public class Drone {
     }
 
     public float getYaw() {
-        return yaw;
+        return testData.nextFloat() * maxYaw; //for testing, pls delete
+        //return yaw;
     }
 
     public void setYaw(float yaw) {
