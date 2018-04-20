@@ -23,14 +23,12 @@ import java.io.IOException;
 public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
 
     public static final float WORLD_SIZE = 480.0f;
-    private static final int BALL_COUNT = 250;
-    private static final int OB_COUNT = 1;
     boolean buttonHeld = false;
     ShapeRenderer renderer;
     ExtendViewport viewport;
     //BouncingBall ball;
     Vector3 tp = new Vector3();
-    Joystick j;
+    //Joystick j;
     GUILayout gui;
     boolean dragging;
     private Client client;
@@ -38,14 +36,14 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     SpriteBatch spriteBatch;
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
     
-    boolean debugServClient = false;
+    boolean debugServClient = true;
     
-    final int THRUST = 0x80;    //0b10000000;
-    final int QUIT = 0x40;   //0b01000000;
-    final int PITCH = 0x0;   //0b00000000;
-    final int ROLL = 0x8;   //0b00001000;
-    final int YAW = 0x10;    //0b00010000;
-    final int FIRE = 0x18;   //0b00011000;
+    final int THRUST = 0x80;    //0b10 000000;
+    final int QUIT = 0x40;   //0b01 000000;
+    final int FIRE = 0x30;   //0b00 11 0000;
+    final int PITCH = 0x00;   //0b00 00 0000;
+    final int ROLL = 0x10;   //0b00 01 0000;
+    final int YAW = 0x20;    //0b00 10 0000;
 
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
 
@@ -62,7 +60,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     private void init() {
         gui = new GUILayout(viewport);
         Gdx.input.setInputProcessor(this);
-        j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
+        //j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
         if(debugServClient && client == null) {
             client = new Client();
             client.start();
@@ -98,7 +96,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         renderer.begin(ShapeType.Filled);
 
         if(debugServClient) {
-            if(client.sendData()){ //need to do this every x frames so the arduino can handle the traffic
+            if(sendTelemetryByte()){
                 Gdx.gl.glClearColor(0, 0, 1, 1);
             }else{
                 Gdx.gl.glClearColor(1, 0, 0, 1);
@@ -167,7 +165,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         if (!dragging) return false;
         viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
-        System.out.println(tp.toString());
+        //System.out.println(tp.toString());
         return true;
     }
 
@@ -181,45 +179,50 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         return false;
     }
     
-    public void sendTelemetryByte(){
+    public boolean sendTelemetryByte(){
         //left stick X: yaw
         //left stick Y: thrust
         //right stick X: pitch
         //right stick Y: roll
+        //return if nothing changed
+        
+        //todo: have fire and quit buttons, prioritize them if press detected
         byte telemetry = 0;
-        int action = THRUST; //just testing ok
+        int action = THRUST; //just testing ok. in the future, do send anytime joystick data changes
+        float maxRange = 50.0f; //arbitrary from testing on desktop
         switch (action){ //need proper way to define this
             case THRUST:
                 telemetry |= THRUST;
-                float throttle = drone.getThrottle();
+                float throttle = gui.leftJoystick.distanceFromOrigin().y + maxRange;
                 throttle /= drone.maxThrottle;
-                telemetry |= (byte)(0x3f*throttle); //0b00111111;
+                telemetry |= (byte)(0x7f*throttle); //0b01111111;
                 break;
             case YAW:
                 telemetry |= YAW;
-                float yaw = drone.getYaw();
+                float yaw = gui.leftJoystick.distanceFromOrigin().x + maxRange;
                 yaw /= drone.maxYaw;
                 telemetry |= (byte)(0xf*yaw); //0b00001111
+                break;            
+            case ROLL:
+                telemetry |= ROLL;
+                float roll = gui.rightJoystick.distanceFromOrigin().y + maxRange;
+                roll /= drone.maxRoll;
+                telemetry |= (byte)(0xf*roll); //0b00001111
                 break;
             case PITCH:
                 telemetry |= PITCH;
-                float pitch = drone.getPitch();
+                float pitch = gui.rightJoystick.distanceFromOrigin().x + maxRange;
                 pitch /= drone.maxPitch;
                 telemetry |= (byte)(0xf*pitch); //0b00001111
-                break;
-            case ROLL:
-                telemetry |= ROLL;
-                float roll = drone.getRoll();
-                roll /= drone.maxRoll;
-                telemetry |= (byte)(0xf*roll); //0b00001111
                 break;
             case FIRE:
                 telemetry |= FIRE;
                 break;
             case QUIT:
                 telemetry |= QUIT;
+                System.exit(0); //shut down app
                 break;
         }
-        client.sendByte(telemetry);
+        return client.sendByte(telemetry);
     }
 }
