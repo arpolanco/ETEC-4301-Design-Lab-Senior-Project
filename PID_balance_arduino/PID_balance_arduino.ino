@@ -65,7 +65,7 @@ float delta_yaw = 0;
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Starting up...\n");
+  //Serial.println("Starting up...\n");
   
   right_front_prop.attach(9); //attatch the right motor to pin 3
   left_front_prop.attach(3);  //attatch the left motor to pin 5
@@ -78,23 +78,9 @@ void setup() {
    * the ESCs won't start up or enter in the configure mode.
    * The min value is 1000us and max is MAX_THROTus, REMEMBER!*/
 
-  
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
 
-  //left_back_prop.writeMicroseconds(MIN_THROT); 
-  //right_back_prop.writeMicroseconds(MIN_THROT);
-  //left_front_prop.writeMicroseconds(MIN_THROT); 
-  //right_front_prop.writeMicroseconds(MIN_THROT);
-
-  //delay(3000);
-
-  //left_back_prop.writeMicroseconds(MAX_THROT); 
-  //right_back_prop.writeMicroseconds(MAX_THROT);
-  //left_front_prop.writeMicroseconds(MAX_THROT); 
-  //right_front_prop.writeMicroseconds(MAX_THROT);
-
-  //Serial.println("Connect Battery.\n");
-
-  //delay(4500);
 
   left_back_prop.writeMicroseconds(1000); 
   right_back_prop.writeMicroseconds(1000);
@@ -103,26 +89,30 @@ void setup() {
 
   MPUSetup();
 
-  Serial.print("\nWaiting for MPU to Settle!");
-  int i = 0;
-  while(i++ < 2000){
-    if(i%200==0)
-    {
-      Serial.print(".");
-    }
-    MPULoop();
-  }
+  //Serial.print("\nWaiting for MPU to Settle!");
+  //int i = 0;
+  //while(i++ < 20){
+  //  if(i%200==0)
+  //  {
+  //    Serial.print(".");
+  //  }
+  //  MPULoop();
+  //}
   
-  r_setpoint = getRoll();
-  p_setpoint = getPitch();
-  y_setpoint = getYaw();
+  //r_setpoint = getRoll();
+  //p_setpoint = getPitch();
+  //y_setpoint = getYaw();
 
-  Serial.println("Setpoint Reached!\n");
+  //Serial.println("Setpoint Reached!\n");
 
+  digitalWrite(LED_BUILTIN, HIGH);
   mode = TUNING;
   Serial.println("Mode = TUNING\n");
   
 }//end of setup void
+/*
+      }*/
+
 
 void loop() {
   //////////////////////////////TIMING///////////////////////////////////
@@ -138,26 +128,39 @@ void loop() {
     ///////////////////////////INPUT/////////////////////////////////////
     if(Serial.available() > 0){
       char input = Serial.read();
-      if(input&0x80)
-      {
-        throttle = map(input&(~0x80), 0, 127, MIN_THROT, MAX_THROT);
+      char masked = input;
+
+      if(input&0x80){
+        masked = input&(0x7f);
+        throttle = map(masked, 0, 127, MIN_THROT, MAX_THROT);
+        Serial.println("Throttle: ");        
       }else if(input&0x40)
       {
-        //Quit!
-        Serial.println("Quit to Idle Mode!");
+        Serial.println("QUIT: ");
         mode = TUNING;
         left_front_prop.writeMicroseconds(1000);
         right_front_prop.writeMicroseconds(1000);
         left_back_prop.writeMicroseconds(1000);
         right_back_prop.writeMicroseconds(1000);
+          
+        Serial.println("Received: ");
+        Serial.println(masked);
         return;
-      }else if(input&0x30 == 0x30)
+      }else if(input == 0x30)
       {
-        Serial.println("Fire!");
+        Serial.println("FIRE: ");
       }else{
-        flight_values[(input&0x30)>>6] = input&0x0f;
-        Serial.println("Setting Desired Values!");
+        Serial.println("Flight Value: ");
+        masked = input&0x0f;
+        flight_values[(input&0x30)>>6] = masked;
       }
+      
+      Serial.println("Received: ");
+      Serial.println(masked);
+      while(Serial.available() > 0){
+        Serial.read();
+      }
+      
       Serial.flush();
     }
   
@@ -197,8 +200,8 @@ void loop() {
     PID_p = get_pid(kp_p, ki_p, kd_p, &pid_i_p, error_p, &previous_error_p);
     PID_y = get_pid(kp_y, ki_y, kd_y, &pid_i_y, error_y, &previous_error_y);
     
-    throttle = analogRead(0);
-    throttle = map(throttle, 0, 1023, MIN_THROT, MAX_THROT);
+    //throttle = analogRead(0);
+    //throttle = map(throttle, 0, 1023, MIN_THROT, MAX_THROT);
     
     ///ROLL
     pwmLF = throttle + PID_r;
@@ -255,20 +258,20 @@ void loop() {
       pwmLB =MAX_THROT;
     }
 
-    Serial.print("  Throt: ");
-    Serial.print(throttle);
+    //Serial.print("  Throt: ");
+    //Serial.print(throttle);
 
-    Serial.print("  P: ");
-    Serial.print(desired_angle_p);
+    //Serial.print("  P: ");
+    //Serial.print(desired_angle_p);
 
-    Serial.print("  R: ");
-    Serial.print(desired_angle_r);
+    //Serial.print("  R: ");
+    //Serial.print(desired_angle_r);
 
-    Serial.print("  dY: ");
-    Serial.print(delta_yaw);
+    //Serial.print("  dY: ");
+    //Serial.print(delta_yaw);
     
-    Serial.print("  Y: ");
-    Serial.println(desired_angle_y);
+    //Serial.print("  Y: ");
+    //Serial.println(desired_angle_y);
         
     /*Finaly using the servo function we create the PWM pulses with the calculated
     width for each pulse*/
@@ -281,8 +284,12 @@ void loop() {
       char input = Serial.read();
       if(input == 'q')
       {
-        Serial.println("Entering Flight Mode!");
+        //Serial.println("Entering Flight Mode!");
         mode = FLIGHT;
+        Serial.println("FlightMode!");
+        r_setpoint = getRoll();
+        p_setpoint = getPitch();
+        y_setpoint = getYaw();
       }
       if(input == 'k'){
         //k change mode
@@ -296,6 +303,8 @@ void loop() {
           //pitch
         }
       }
+      Serial.println("Received: ");
+      Serial.println(input);
     }
   }
 }//end of loop void
@@ -388,7 +397,7 @@ void loop() {
    //Total_angle[1] = 0.98 *(Total_angle[1] + Gyro_angle[1]*elapsedTime) + 0.02*Acceleration_angle[1];
    
    /*Now we have our angles in degree and values from -10º0 to 100º aprox*/
-    //Serial.println(Total_angle[1]);
+    ////Serial.println(Total_angle[1]);
     
     //kp_r=analogRead(1);
 //kp_r = map(kp_r, 0, 627, 0, 400);
