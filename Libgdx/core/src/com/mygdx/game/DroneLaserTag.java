@@ -36,7 +36,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     SpriteBatch spriteBatch;
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
     
-    boolean debugServClient = true;
+    boolean debugServClient = false;
     
     final int THRUST = 0x80;    //0b10 000000;
     final int QUIT = 0x40;   //0b01 000000;
@@ -95,7 +95,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         renderer.setProjectionMatrix(viewport.getCamera().combined);
         renderer.begin(ShapeType.Filled);
 
-        if(debugServClient) {
+        if(debugServClient){
             if(sendTelemetryByte()){
                 Gdx.gl.glClearColor(0, 0, 1, 1);
             }else{
@@ -103,30 +103,15 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
             }
             //get and draw video frame from server
 
-            /*
-            batch.begin();
-            batch.draw(client.getImage(), 100, 100);
-            batch.end();
-            */
             //I assume this runs at 60fps, so do this asyncronously?
-         //   gui.render(image);
+
         }else{
             Gdx.gl.glClearColor(0, 0, 0, 1);
         }
         gui.imageFeed(testImg);
         gui.update(tp);
-        //spriteBatch.begin();
         gui.render(renderer, spriteBatch);
-        //spriteBatch.begin();
-        //spriteBatch.draw(, 100, 100);
-        //spriteBatch.end();
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        gui.update(tp);
-        //gui.render(renderer);
-
-
-        //gui.render(renderer);
 
         spriteBatch.end();
         renderer.end();
@@ -158,6 +143,8 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+
+        tp = new Vector3();
         return false;
     }
 
@@ -216,11 +203,15 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
                 telemetry |= (byte)(0xf*pitch); //0b00001111
                 break;
             case FIRE:
-                telemetry |= FIRE;
+
+                if (drone.canFire())
+                {
+                    telemetry |= FIRE;
+                }
+
                 break;
             case QUIT:
                 telemetry |= QUIT;
-                System.exit(0); //shut down app
                 break;
         }
         return client.sendByte(telemetry);

@@ -4,8 +4,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.sun.org.apache.bcel.internal.generic.RET;
 
 
 /**
@@ -14,13 +16,12 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 
 public class Button
 {
-    SpriteBatch mBatch;
-    ShapeRenderer mShapeRenderer;
     String mText;
     Vector2 mPos;
     Vector2 mSize;
     Color mForegroundColor;
-    BitmapFont mFont;
+    //BitmapFont mFont;
+    Rectangle button;
 
     public Button(Vector2 pos, Vector2 size, String text, Color color)
     {
@@ -28,20 +29,32 @@ public class Button
         mText = text;
         mSize = size;
         mForegroundColor = color;
-        mBatch = new SpriteBatch();
-        mShapeRenderer = new ShapeRenderer();
-        mFont = new BitmapFont();
+        button = new Rectangle(pos.x,pos.y,size.x,size.y);
+        //mFont = new BitmapFont();
+
     }
-    public void render()
+
+    public boolean isPressed(Vector2 touch)
     {
-        mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        mShapeRenderer.setColor(Color.WHITE);
-        mShapeRenderer.rect(mPos.x, mPos.y, mSize.x, mSize.y);
-        mShapeRenderer.setColor(mForegroundColor);
-        mShapeRenderer.rect(mPos.x + 2, mPos.y + 2, mSize.x - 4, mSize.y - 4);
-        mShapeRenderer.end();
+
+        if(button.contains(touch))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void render(ShapeRenderer renderer) {
+        renderer.set(ShapeRenderer.ShapeType.Filled);
+        //renderer.set();
+        //draw the background of the stick first
+        renderer.setColor(mForegroundColor);
+        renderer.rect(button.x,button.y,button.getWidth(),button.getHeight());
+
+        /*
         mBatch.begin();
         GlyphLayout layout = new GlyphLayout(mFont, mText);
         mBatch.end();
+        */
     }
 }
