@@ -8,8 +8,11 @@ class Arduino:
         self.serial = serial.Serial(self.port, self.baud, timeout=0.01)
         print('Connected!')
 
-    def send(self, data):
-        self.serial.write(data.encode())
+    def send(self, data, encode=True):
+        if encode:
+            self.serial.write(data.encode())
+        else:
+            self.serial.write(data)
 
     def recv(self):
         return self.serial.readline()
