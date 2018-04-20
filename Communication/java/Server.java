@@ -10,7 +10,7 @@ class Server{
     static ArrayList<Drone> drones = new ArrayList<>();
     static int currentDrone = -1;
     static int currentControllers = 0;
-    final static boolean testingTelemetry = true;
+    final static boolean testingTelemetry = false;
     
     public static void handlePhone(Socket phone) throws IOException{
         System.out.println("Phone connected. Checking for drones...");
