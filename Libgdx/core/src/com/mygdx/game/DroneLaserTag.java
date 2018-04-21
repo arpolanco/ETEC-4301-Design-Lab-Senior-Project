@@ -30,14 +30,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     SpriteBatch spriteBatch;
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
     
-    boolean debugServClient = false;
-    
-    final int THRUST = 0x80;    //0b10 000000;
-    final int QUIT = 0x40;   //0b01 000000;
-    final int FIRE = 0x30;   //0b00 11 0000;
-    final int PITCH = 0x00;   //0b00 00 0000;
-    final int ROLL = 0x10;   //0b00 01 0000;
-    final int YAW = 0x20;    //0b00 10 0000;
+    boolean debugServClient = true;
 
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
 
@@ -55,11 +48,6 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         gui = new GUILayout(viewport);
         Gdx.input.setInputProcessor(this);
         //j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
-
-        if(debugServClient && drone.client == null) {
-            drone.client = new Client();
-            drone.client.start();
-        }
         spriteBatch = new SpriteBatch();
 
     }
@@ -138,7 +126,6 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-
         tp = new Vector3();
         return false;
     }
@@ -168,47 +155,44 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         //right stick Y: roll
         //return if nothing changed
         
-        //todo: have fire and quit buttons, prioritize them if press detected
-        byte telemetry = 0;
-        int action = THRUST; //just testing ok. in the future, do send anytime joystick data changes
-        float maxRange = 50.0f; //arbitrary from testing on desktop
-        switch (action){ //need proper way to define this
-            case THRUST:
-                telemetry |= THRUST;
-                float throttle = gui.leftJoystick.distanceFromOrigin().y + maxRange;
-                throttle /= drone.maxThrottle;
-                telemetry |= (byte)(0x7f*throttle); //0b01111111;
-                break;
-            case YAW:
-                telemetry |= YAW;
-                float yaw = gui.leftJoystick.distanceFromOrigin().x + maxRange;
-                yaw /= drone.maxYaw;
-                telemetry |= (byte)(0xf*yaw); //0b00001111
-                break;            
-            case ROLL:
-                telemetry |= ROLL;
-                float roll = gui.rightJoystick.distanceFromOrigin().y + maxRange;
-                roll /= drone.maxRoll;
-                telemetry |= (byte)(0xf*roll); //0b00001111
-                break;
-            case PITCH:
-                telemetry |= PITCH;
-                float pitch = gui.rightJoystick.distanceFromOrigin().x + maxRange;
-                pitch /= drone.maxPitch;
-                telemetry |= (byte)(0xf*pitch); //0b00001111
-                break;
-            case FIRE:
-
-                if (drone.canFire())
-                {
-                    telemetry |= FIRE;
-                }
-
-                break;
-            case QUIT:
-                telemetry |= QUIT;
-                break;
+        //test quit
+        if(gui.quitButton.isPressed(new Vector2(tp.x, tp.y))){
+            return drone.client.sendByte((byte) drone.QUIT);
         }
-        return drone.client.sendByte(telemetry);
+        //test fire
+        if(gui.shootButton.isPressed(new Vector2(tp.x, tp.y))){//add condition for if cooldown is finished
+            return drone.client.sendByte((byte) drone.FIRE);
+        }
+        
+        float maxRange = 50.0f; //arbitrary from testing on desktop
+        byte value;        
+        //testing throttle
+        value = drone.getThrottle(gui.leftJoystick.distanceFromOrigin().y + maxRange);
+        if(value != drone.previousThrottle){
+            drone.previousThrottle = value;
+            return drone.client.sendByte(value);
+        }
+        
+        //testing yaw
+        value = drone.getYaw(gui.leftJoystick.distanceFromOrigin().x + maxRange);
+        if(value != drone.previousYaw){
+            drone.previousYaw = value;
+            return drone.client.sendByte(value);
+        }
+        
+        //testing roll
+        value = drone.getRoll(gui.rightJoystick.distanceFromOrigin().y + maxRange);
+        if(value != drone.previousRoll){
+            drone.previousRoll = value;
+            return drone.client.sendByte(value);
+        }
+        
+        //testing pitch
+        value = drone.getPitch(gui.rightJoystick.distanceFromOrigin().x + maxRange);
+        if(value != drone.previousPitch){
+            drone.previousPitch = value;
+            return drone.client.sendByte(value);
+        }
+        return true;
     }
 }

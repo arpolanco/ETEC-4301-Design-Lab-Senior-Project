@@ -23,14 +23,29 @@ public class Drone {
     String playerID;
     int score;
     
+    final int THRUST = 0x80;    //0b10 000000;
+    final int QUIT = 0x40;   //0b01 000000;
+    final int FIRE = 0x30;   //0b00 11 0000;
+    final int PITCH = 0x00;   //0b00 00 0000;
+    final int ROLL = 0x10;   //0b00 01 0000;
+    final int YAW = 0x20;    //0b00 10 0000;
+    
     public final float maxThrottle = 100.0f; //based on joystick size on my desktop
     public final float maxRoll = 100.0f; //based on joystick size on my desktop
     public final float maxPitch = 100.0f; //based on joystick size on my desktop
     public final float maxYaw = 100.0f; //based on joystick size on my desktop
+    public int previousThrottle;
+    public int previousRoll;
+    public int previousPitch;
+    public int previousYaw;
+    byte throttleByte = 0;
+    byte rollByte = 0;
+    byte pitchByte = 0;
+    byte yawByte = 0;
     
     final Random testData = new Random(); //delete this, for testing purposes
 
-    boolean debugServ = false;
+    boolean debugServ = true;
 
     public Drone()
     {
@@ -139,36 +154,48 @@ public class Drone {
         this.cooldown = cooldown;
     }
 
-    public float getThrottle() {
-        return testData.nextFloat() * maxThrottle; //for testing, pls delete
-        //return throttle;
+    public byte getThrottle(float input) {
+        throttle = input;
+        throttle /= maxThrottle;
+        throttleByte = (byte) THRUST;
+        throttleByte |= (byte)(0x7f*throttle);
+        return throttleByte;
     }
 
     public void setThrottle(float throttle) {
         this.throttle = throttle;
     }
 
-    public float getRoll() {
-        return testData.nextFloat() * maxRoll; //for testing, pls delete
-        //return roll;
+    public byte getRoll(float input) {
+        roll = input;
+        roll /= maxRoll;
+        rollByte = (byte) ROLL;
+        rollByte |= (byte)(0xf*roll);
+        return rollByte;
     }
 
     public void setRoll(float roll) {
         this.roll = roll;
     }
 
-    public float getPitch() {
-        return testData.nextFloat() * maxPitch; //for testing, pls delete
-        //return pitch;
+    public byte getPitch(float input) {
+        pitch = input;
+        pitch /= maxPitch;
+        pitchByte = (byte) PITCH;
+        pitchByte |= (byte)(0xf*pitch);
+        return pitchByte;
     }
 
     public void setPitch(float pitch) {
         this.pitch = pitch;
     }
 
-    public float getYaw() {
-        return testData.nextFloat() * maxYaw; //for testing, pls delete
-        //return yaw;
+    public byte getYaw(float input) {
+        yaw = input;
+        yaw /= maxYaw;
+        yawByte = (byte) YAW;
+        yawByte |= (byte)(0xf*yaw);
+        return yawByte;
     }
 
     public void setYaw(float yaw) {

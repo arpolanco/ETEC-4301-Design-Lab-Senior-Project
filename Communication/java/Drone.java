@@ -75,8 +75,6 @@ class Drone extends Thread{
                     nothing gets displayed at first, but then many frames flash
                     at once
                 */
-                long time;
-                byte bob = 'X';
                 while(true){
                     /*
                     time = System.nanoTime();
@@ -107,7 +105,7 @@ class Drone extends Thread{
 	}
         
         private void receiveAndSendTelemetry(){
-            int telemetry = 0;
+            int telemetry;
             try {
                 try {
                     controllerLock.acquire();
@@ -127,8 +125,9 @@ class Drone extends Thread{
                     System.out.println("Kapow!");
                 }else if(telemetry == QUIT){
                     System.out.println("Shutting down...");
-                    controller.close();
-                    System.exit(0);
+                    telemetry = 'q';
+                    //controller.close();
+                    //System.exit(0);
                 }else if((telemetry & THRUST) == THRUST){
                     System.out.print("Thrust: ");
                     System.out.println(String.format("%7s", Integer.toBinaryString(telemetry & 0x7f)).replace(' ', '0'));
@@ -146,7 +145,7 @@ class Drone extends Thread{
                     }
                     System.out.println(String.format("%4s", Integer.toBinaryString(telemetry & 0xf)).replace(' ', '0'));
                 }
-                droneOutput.write(telemetry);
+                droneOutput.write((byte) telemetry);
                 droneOutput.flush();
             } catch (IOException ex) {
                 System.out.println(ex);

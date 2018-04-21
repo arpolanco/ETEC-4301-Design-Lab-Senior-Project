@@ -65,7 +65,7 @@ public class GUILayout{
         rightJoystick.update(temp);
 
 
-        if(quitButton.isPressed(temp))
+        /*if(quitButton.isPressed(temp))
         {
             System.out.println("Quit");
         }
@@ -74,6 +74,7 @@ public class GUILayout{
         {
             System.out.println("Shoot");
         }
+        */
 
 
     }
