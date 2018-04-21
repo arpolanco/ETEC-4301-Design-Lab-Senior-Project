@@ -194,7 +194,21 @@ void loop() {
     
     error_r = true_r - desired_angle_r;
     error_p = true_p - desired_angle_p;
+
+    float theta_2 = desired_angle_y + 360;
+    float theta_3 = desired_angle_y - 360;
+
+    float err1_y = true_y - theta_2;
+    float err2_y = true_y - theta_3;
     error_y = true_y - desired_angle_y;
+
+    if(abs(err1_y) < abs(error_y)){
+      error_y = err1_y;
+    }
+    if(abs(err2_y) < abs(error_y)){
+      error_y = err2_y;
+    }
+    
         
     PID_r = get_pid(kp_r, ki_r, kd_r, &pid_i_r, error_r, &previous_error_r);
     PID_p = get_pid(kp_p, ki_p, kd_p, &pid_i_p, error_p, &previous_error_p);
