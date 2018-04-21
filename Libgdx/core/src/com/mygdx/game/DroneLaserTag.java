@@ -21,17 +21,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
-
-    public static final float WORLD_SIZE = 480.0f;
-    boolean buttonHeld = false;
     ShapeRenderer renderer;
     ExtendViewport viewport;
-    //BouncingBall ball;
     Vector3 tp = new Vector3();
-    //Joystick j;
     GUILayout gui;
     boolean dragging;
-    private Client client;
     Drone drone = new Drone();
     SpriteBatch spriteBatch;
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
@@ -61,9 +55,10 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         gui = new GUILayout(viewport);
         Gdx.input.setInputProcessor(this);
         //j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
-        if(debugServClient && client == null) {
-            client = new Client();
-            client.start();
+
+        if(debugServClient && drone.client == null) {
+            drone.client = new Client();
+            drone.client.start();
         }
         spriteBatch = new SpriteBatch();
 
@@ -214,6 +209,6 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
                 telemetry |= QUIT;
                 break;
         }
-        return client.sendByte(telemetry);
+        return drone.client.sendByte(telemetry);
     }
 }

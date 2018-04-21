@@ -6,17 +6,22 @@ import com.badlogic.gdx.math.Vector3;
 import java.util.Random;
 
 public class Drone {
-
-    Vector3 position;
-    String playerID;
-    int score;
+    Client client;
+    GameMode game = new GameMode("Game1");
     float health;
-    float rateOfFire;
+    public float timeTillShoot;
     float cooldown; //amount of time before can shoot again
+    float maxShots;
+
+
+    float damage;
     float throttle; //this is just a value how fast you are moving forward or backward
     float roll; //this is an angle
     float pitch; //
     float yaw; //
+    Vector3 position;
+    String playerID;
+    int score;
     
     public final float maxThrottle = 100.0f; //based on joystick size on my desktop
     public final float maxRoll = 100.0f; //based on joystick size on my desktop
@@ -25,9 +30,17 @@ public class Drone {
     
     final Random testData = new Random(); //delete this, for testing purposes
 
+    boolean debugServ = false;
+
     public Drone()
     {
+        if(debugServ)
+        {
+            client = new Client();
+            client.start();
+        }
 
+        game.initVals(game.gm, this);
 
     }
 
@@ -56,12 +69,39 @@ public class Drone {
     public boolean canFire()
     {
         if(cooldown <= 0)
+        {
             return true;
+        }
+
         else
             return false;
     }
 
+    public void update(float dt)
+    {
+        if(timeTillShoot > 0)
+        {
+            timeTillShoot -= dt;
+            if (timeTillShoot <= 0)
+                timeTillShoot = 0;
+        }
+    }
 
+    public float getDamage() {
+        return damage;
+    }
+
+    public void setDamage(float damage) {
+        this.damage = damage;
+    }
+
+    public float getMaxShots() {
+        return maxShots;
+    }
+
+    public void setMaxShots(float maxShots) {
+        this.maxShots = maxShots;
+    }
     public void setPosition(Vector3 position) {
         this.position = position;
     }
@@ -90,13 +130,6 @@ public class Drone {
         this.health = health;
     }
 
-    public float getRateOfFire() {
-        return rateOfFire;
-    }
-
-    public void setRateOfFire(float rateOfFire) {
-        this.rateOfFire = rateOfFire;
-    }
 
     public float getCooldown() {
         return cooldown;
