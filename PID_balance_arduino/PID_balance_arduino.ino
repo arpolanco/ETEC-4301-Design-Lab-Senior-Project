@@ -205,7 +205,7 @@ void loop() {
     if(abs(err1_y) < abs(error_y)){
       error_y = err1_y;
     }
-    if(abs(err2_y) < abs(error_y)){
+    if(abs(err2_y) < abs(error_y)) {
       error_y = err2_y;
     }
     
