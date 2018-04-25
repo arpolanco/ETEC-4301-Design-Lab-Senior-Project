@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<HTML>
+	<HEAD>
+		<TITLE>Drone Settings</TITLE>
+	</HEAD>
+	<BODY>
+		<H1>
+			<u>Drone Settings Page.</u>
+		</H1>
+		<div>
+			<p>
+				This Page can be used to change the K values on the drone while in flight.
+			</p>
+			<FORM>
+				DRONE:
+				<INPUT type="selection" name="drone">
+				
+				</br>	
+				PITCH:..
+				KP: <INPUT type="range" name="K P P" min="0" max="256">
+				KI: <INPUT type="range" name="K P I" min="0" max="256">
+				KD: <INPUT type="range" name="K P D" min="0" max="256">
+			
+				</br>
+				ROLL:....
+				KP: <INPUT type="range" name="K R P" min="0" max="256">
+				KI: <INPUT type="range" name="K R I" min="0" max="256">
+				KD: <INPUT type="range" name="K R D" min="0" max="256">
+				
+				</br>
+				<INPUT type="submit" value="Apply">
+			</FORM>
+		</div>
+	</BODY>
+</HTML>
