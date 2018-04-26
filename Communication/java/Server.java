@@ -3,6 +3,9 @@ package server;
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class Server{
     final static int TOTAL_DRONES = 1; //should be 4 in the final thing
@@ -11,6 +14,9 @@ class Server{
     static int currentDrone = -1;
     static int currentControllers = 0;
     final static boolean testingTelemetry = false;
+    
+    final static Pattern droneIDGetter = Pattern.compile("drone=(\\d+)");
+    final static Pattern kppGetter = Pattern.compile("K\\+P\\+P=(\\d+)");
     
     public static void handlePhone(Socket phone) throws IOException{
         System.out.println("Phone connected. Checking for drones...");
@@ -86,6 +92,67 @@ class Server{
         }
     }
     
+    public static void handleGet(Socket request, String requestType) throws FileNotFoundException, IOException{
+        requestType = requestType.split(" ")[1];
+        if(requestType.length() > 1){
+            requestType = requestType.split("\\?")[1];
+            String[] info = requestType.split("&");
+            if(info.length > 1){
+                //System.out.println(Arrays.toString(info));
+                Matcher matcher;
+                for(String data : info){
+                    String[] value = data.split("=");
+                    if(value.length > 1){
+                        switch(value[0]){
+                            case "drone":
+                                System.out.print("Drone ID requested: ");
+                                System.out.println(value[1]);
+                                break;
+                            case "K+P+P":
+                                System.out.print("KPP requested: ");
+                                System.out.println(value[1]);
+                                break;
+                            case "K+P+I":
+                                System.out.print("KPI requested: ");
+                                System.out.println(value[1]);
+                                break;
+                            case "K+P+D":
+                                System.out.print("KPD requested: ");
+                                System.out.println(value[1]);
+                                break;
+                            case "R+P+P":
+                                System.out.print("RPP requested: ");
+                                System.out.println(value[1]);
+                                break;
+                            case "R+P+I":
+                                System.out.print("RPI requested: ");
+                                System.out.println(value[1]);
+                                break;
+                            case "R+P+D":
+                                System.out.print("RPD requested: ");
+                                System.out.println(value[1]);
+                                break;
+                            default:
+                                System.out.print("Other request: ");
+                                System.out.println(Arrays.toString(value));
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        int count;
+        byte[] buffer = new byte[2048];
+        request.getOutputStream().write("HTTP/1.0 200 OK\r\n\r\n".getBytes());
+        FileInputStream webpage = new FileInputStream("settings.html");
+        while((count = webpage.read(buffer)) > 0){
+          request.getOutputStream().write(buffer, 0, count);
+        }
+        request.getOutputStream().flush();
+        request.close();
+        webpage.close();
+    }
+    
     public static void main(String[] args){
 	try{
             //arraylist of threads
@@ -94,6 +161,7 @@ class Server{
             BufferedReader connectionTypeReader;
             
             String connectionType;
+            String requestType;
             System.out.println(host.toString());
 
             while(true){
@@ -108,7 +176,17 @@ class Server{
                         handlePhone(newConnection);
                         break;
                     default:
-                        System.out.println("Unknown connection type");
+                        requestType = connectionType.substring(0, 4);
+                        if(requestType.equals("GET ")){
+                            System.out.println(connectionType);
+                            handleGet(newConnection, connectionType);
+                        }else if(requestType.equals("POST")){
+                            System.out.println("Received POST request. Send data to specified drone and kill this connection");
+                            System.out.println(connectionType);
+                            newConnection.close();
+                        }else{
+                            System.out.println("Unknown connection type " + requestType);
+                        }
                         break;
                 }
             }
