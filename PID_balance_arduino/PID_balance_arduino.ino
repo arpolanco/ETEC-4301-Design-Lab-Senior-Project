@@ -9,6 +9,7 @@
 
 #define TUNING 0
 #define FLIGHT 1
+#define PIDTUNE 2
 
 Servo right_front_prop;
 Servo left_front_prop;
@@ -33,6 +34,10 @@ char input_buffer[32];
 float elapsedTime, time, timePrev;
 int i;
 float rad_to_deg = 180/3.141592654;
+
+float PID_tmp = 0;
+byte prySelect = 0;
+byte pidSelect = 0;
 
 float PID_r, PID_p, PID_y, pwmLF, pwmRF, pwmLB, pwmRB, error_r, error_y, error_p, previous_error_r, previous_error_y, previous_error_p;
 
@@ -127,8 +132,8 @@ void loop() {
   if(mode == FLIGHT){
     ///////////////////////////INPUT/////////////////////////////////////
     if(Serial.available() > 0){
-      char input = Serial.read();
-      char masked = input;
+      byte input = Serial.read();
+      byte masked = input;
 
       if(input&0x80){
         masked = input&(0x7f);
@@ -136,16 +141,63 @@ void loop() {
         Serial.println("Throttle: ");        
       }else if(input&0x40)
       {
-        Serial.println("QUIT: ");
-        mode = TUNING;
-        left_front_prop.writeMicroseconds(1000);
-        right_front_prop.writeMicroseconds(1000);
-        left_back_prop.writeMicroseconds(1000);
-        right_back_prop.writeMicroseconds(1000);
-          
-        Serial.println("Received: ");
-        Serial.println(masked);
-        return;
+        if(input == 'q'){
+          Serial.println("QUIT: ");
+          mode = TUNING;
+          left_front_prop.writeMicroseconds(1000);
+          right_front_prop.writeMicroseconds(1000);
+          left_back_prop.writeMicroseconds(1000);
+          right_back_prop.writeMicroseconds(1000);
+            
+          Serial.println("Received: ");
+          Serial.println(masked);
+          return;
+        }
+        else{
+          prySelect = (input & 0x30) >> 4;
+          pidSelect = (input & 0x0C) >> 2;
+          //if(Serial.available() > 0){
+            input = Serial.read();
+            PID_tmp = 5.0f * input / 255.0f;
+            switch(prySelect)
+            {
+              case(0): //Pitch
+                if(prySelect == 0) //Proportional
+                  kp_p = PID_tmp;
+                else if(prySelect == 1) //Integral
+                  ki_p = PID_tmp / 5.0f;
+                else //Differential
+                  kd_p = PID_tmp;
+              break;
+              case(1): //Roll
+                if(prySelect == 0) //Proportional
+                  kp_r = PID_tmp;
+                else if(prySelect == 1) //Integral
+                  ki_r = PID_tmp  / 5.0f;
+                else //Differential
+                  kd_r = PID_tmp;
+              break;
+              case(2): //Yaw
+                if(prySelect == 0) //Proportional
+                  kp_y = PID_tmp;
+                else if(prySelect == 1) //Integral
+                  ki_y = PID_tmp / 5.0f;
+                else //Differential
+                  kd_y = PID_tmp;
+              break;
+              default: //Even more uh-oh
+                Serial.println("You shouldn't see this...(Wrong PRY value)");
+              break;
+              
+            //}
+          }
+          /*Serial.print("Set value to: ");
+          Serial.println(PID_tmp);
+          Serial.print("PRY: ");
+          Serial.print(prySelect);
+          Serial.print(",  PID: ");
+          Serial.println(pidSelect);*/
+        }
       }else if(input == 0x30)
       {
         Serial.println("FIRE: ");
