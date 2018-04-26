@@ -6,85 +6,104 @@
 	</HEAD>
 	<BODY>
 		<H1>
-			<u>Drone Settings Page.</u>
+			<u>Drone Settings Page</u>
 		</H1>
 		<div>
 			<p>
 				This Page can be used to change the K values on the drone while in flight.
 			</p>
-			<FORM>
-				DRONE:
-				<INPUT type="selection" name="drone">
-				
-				</br>	
-				PITCH:..
-                <br/>
-                <span id="pkp">
-                    KP: <INPUT type="range" name="K P P" min="0" max="256">
-                    <span>128</span>
-                </span>
-                <br/>
-                <span id="pki">
-                    KI: <INPUT type="range" name="K P I" min="0" max="256">
-                    <span>128</span>
-                </span>
-                <br/>
-                <span id="pkd">
-                    KD: <INPUT type="range" name="K P D" min="0" max="256">
-                    <span>128</span>
-                </span>
-                <br/>
-			
-                <br/>
-                <br/>
-				ROLL:....
-                <br/>
-                <span id="rkp">
-                    KP: <INPUT type="range" name="R P P" min="0" max="256">
-                    <span>128</span>
-                </span>
-                <br/>
-                <span id="rki">
-                    KI: <INPUT type="range" name="R P I" min="0" max="256">
-                    <span>128</span>
-                </span>
-                <br/>
-                <span id="rkd">
-                    KD: <INPUT type="range" name="R P D" min="0" max="256">
-                    <span>128</span>
-                </span>
-                <br/>
-				
-				</br>
-				<INPUT type="submit" value="Apply">
-			</FORM>
-            <button id='testBtn' value='Click me!'>TEST</button>
-            <p> TEST </p>
+            DRONE:
+            <INPUT type="selection" name="drone" id="droneBox">
+            
+            </br>	
+            PITCH:..
             <br/>
-            <p> TEST 1</p>
+            <span id="pkp">
+                KP: <INPUT type="range" name="K P P" min="0" max="256">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KPP">Apply</button>
+            </span>
             <br/>
-            <p> TEST 2</p>
+            <span id="pki">
+                KI: <INPUT type="range" name="K P I" min="0" max="256">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KPI">Apply</button>
+            </span>
             <br/>
-            <p> TEST 3</p>
+            <span id="pkd">
+                KD: <INPUT type="range" name="K P D" min="0" max="256">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KPD">Apply</button>
+            </span>
             <br/>
-            <p> TEST 4</p>
+        
+            <br/>
+            <br/>
+            ROLL:....
+            <br/>
+            <span id="rkp">
+                KP: <INPUT type="range" name="K R P" min="0" max="256">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KRP">Apply</button>
+            </span>
+            <br/>
+            <span id="rki">
+                KI: <INPUT type="range" name="K R  I" min="0" max="256">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KRI">Apply</button>
+            </span>
+            <br/>
+            <span id="rkd">
+                KD: <INPUT type="range" name="K R D" min="0" max="256">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KRD">Apply</button>
+            </span>
+            <br/>
+            
+            </br>
+            <br/>
+            YAW:....
+            <br/>
+            <span id="rkp">
+                KP: <INPUT type="range" name="K Y P" min="0" max="256">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KYP">Apply</button>
+            </span>
+            <br/>
+            <span id="rki">
+                KI: <INPUT type="range" name="R Y I" min="0" max="256">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KYI">Apply</button>
+            </span>
+            <br/>
+            <span id="rkd">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KYD">Apply</button>
+            </span>
             <br/>
 		</div>
 	</BODY>
     <script>
         $(document).ready(function(){
-            $('#testBtn').click(function(){
-                console.log('You clicked it!');
-            });
             $('input[type=range]').change(function(){
-                $(this).parent().find('span').text($(this).val());
+                var kVal = ($(this).val() / 256.0) * 5;
+                $(this).parent().find('span').text(kVal);
+            });
+            $('.applyBtn').click(function(){
+                var req = new XMLHttpRequest();
+                var url = window.location.href;
+                if (url.slice(-1) != '/')
+                    url +=  '/';
+                url += '?drone=';
+                url += $('#droneBox').val()
+                url += '&';
+                url +=  $(this).prop('name');
+                url += '='
+                url += $(this).parent().find('input').val();
+                console.log(url);
+                req.open('GET',  url);
+                req.send();
             });
         });	
-        //console.log('Foo!');
-        //$(document).ready(function(){
-        //    $('#testBtn').click(function(){
-        //        print('You clicked it!');
-        //    });
-        //});
     </script>
 </HTML>
