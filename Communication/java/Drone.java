@@ -28,11 +28,12 @@ as the copyright header is left intact.
 class Drone extends Thread{
 	private final Socket client;
         private Socket controller;
-        private OutputStream droneOutput;
+        private final OutputStream droneOutput;
         private InputStream droneInput;
         private BufferedReader inputReader;
         private byte[] droneInputBuffer;
         private final Semaphore controllerLock = new Semaphore(1);
+        private final Semaphore outputLock = new Semaphore(1);
         private final int BUFFER_SIZE = 4096;
         private final int ID;
         
@@ -50,9 +51,10 @@ class Drone extends Thread{
         private final float maxYaw = 40.0f;
         private final float maxRoll = 40.0f;
         
-	public Drone(Socket c, int id_){
+	public Drone(Socket c, int id_) throws IOException{
             client = c;
             ID = id_;
+            droneOutput = client.getOutputStream();
             System.out.print("Drone: ");
             System.out.println(client.toString());
 	}
@@ -76,27 +78,32 @@ class Drone extends Thread{
                     at once
                 */
                 while(true){
-                    /*
-                    time = System.nanoTime();
-                    frame = converter.convert(grabber.grab());
-                    removeThis.draw(frame, 1000000000.0/((((double)(System.nanoTime()-time)))));
-                    */
-                    /*
-                    time = System.nanoTime();
-                    System.out.println("Waiting to receive data from phone...");
-                    while(!receiveData()){
+                    try {
+                        /*
+                        time = System.nanoTime();
+                        frame = converter.convert(grabber.grab());
+                        removeThis.draw(frame, 1000000000.0/((((double)(System.nanoTime()-time)))));
+                        */
+                        /*
+                        time = System.nanoTime();
+                        System.out.println("Waiting to receive data from phone...");
+                        while(!receiveData()){
                         //
+                        }
+                        System.out.println("Sending data to drone...");
+                        sendData(bob);
+                        System.out.println("Waiting to receive data from drone...");
+                        receiveDataFromDrone();
+                        System.out.print("Time for trip: ");
+                        System.out.println((((float)(System.nanoTime()-time))/1000000000.0));
+                        */
+                        receiveAndSendTelemetry();
+                        //sendFrame(frame);
+                        //System.out.println(1/(((float)(System.nanoTime()-time))/1000000.0));
+                    } catch (InterruptedException ex) {
+                        System.out.println(ex);
+                        System.exit(-1);
                     }
-                    System.out.println("Sending data to drone...");
-                    sendData(bob);
-                    System.out.println("Waiting to receive data from drone...");
-                    receiveDataFromDrone();
-                    System.out.print("Time for trip: ");
-                    System.out.println((((float)(System.nanoTime()-time))/1000000000.0));
-                    */
-                    receiveAndSendTelemetry();
-                    //sendFrame(frame);
-                    //System.out.println(1/(((float)(System.nanoTime()-time))/1000000.0));
                 }
             //}catch(IOException e){
                 //System.out.println(e);
@@ -104,7 +111,15 @@ class Drone extends Thread{
             //}
 	}
         
-        private void receiveAndSendTelemetry(){
+        public void sendKValue(byte type, byte value) throws IOException, InterruptedException{
+            outputLock.acquire();
+            droneOutput.write(type);
+            droneOutput.write(value);
+            droneOutput.flush();
+            outputLock.release();
+        }
+        
+        private void receiveAndSendTelemetry() throws InterruptedException{
             int telemetry;
             try {
                 try {
@@ -145,8 +160,10 @@ class Drone extends Thread{
                     }
                     System.out.println(String.format("%4s", Integer.toBinaryString(telemetry & 0xf)).replace(' ', '0'));
                 }
+                outputLock.acquire();
                 droneOutput.write((byte) telemetry);
                 droneOutput.flush();
+                outputLock.release();
             } catch (IOException ex) {
                 System.out.println(ex);
                 System.exit(-1);
@@ -190,7 +207,6 @@ class Drone extends Thread{
                 }
                 */
                 try {
-                    droneOutput = client.getOutputStream();
                     droneInput = new BufferedInputStream(controller.getInputStream(), BUFFER_SIZE);
                     //inputReader = new BufferedReader(new InputStreamReader(droneInput));
                 } catch (IOException ex) {
