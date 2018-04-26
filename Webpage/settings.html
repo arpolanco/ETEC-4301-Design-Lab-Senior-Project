@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<HTML>
+	<HEAD>
+		<TITLE>Drone Settings</TITLE>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	</HEAD>
+	<BODY>
+		<H1>
+			<u>Drone Settings Page.</u>
+		</H1>
+		<div>
+			<p>
+				This Page can be used to change the K values on the drone while in flight.
+			</p>
+			<FORM>
+				DRONE:
+				<INPUT type="selection" name="drone">
+				
+				</br>	
+				PITCH:..
+                <br/>
+                <span id="pkp">
+                    KP: <INPUT type="range" name="K P P" min="0" max="256">
+                    <span>128</span>
+                </span>
+                <br/>
+                <span id="pki">
+                    KI: <INPUT type="range" name="K P I" min="0" max="256">
+                    <span>128</span>
+                </span>
+                <br/>
+                <span id="pkd">
+                    KD: <INPUT type="range" name="K P D" min="0" max="256">
+                    <span>128</span>
+                </span>
+                <br/>
+			
+                <br/>
+                <br/>
+				ROLL:....
+                <br/>
+                <span id="rkp">
+                    KP: <INPUT type="range" name="R P P" min="0" max="256">
+                    <span>128</span>
+                </span>
+                <br/>
+                <span id="rki">
+                    KI: <INPUT type="range" name="R P I" min="0" max="256">
+                    <span>128</span>
+                </span>
+                <br/>
+                <span id="rkd">
+                    KD: <INPUT type="range" name="R P D" min="0" max="256">
+                    <span>128</span>
+                </span>
+                <br/>
+				
+				</br>
+				<INPUT type="submit" value="Apply">
+			</FORM>
+            <button id='testBtn' value='Click me!'>TEST</button>
+            <p> TEST </p>
+            <br/>
+            <p> TEST 1</p>
+            <br/>
+            <p> TEST 2</p>
+            <br/>
+            <p> TEST 3</p>
+            <br/>
+            <p> TEST 4</p>
+            <br/>
+		</div>
+	</BODY>
+    <script>
+        $(document).ready(function(){
+            $('#testBtn').click(function(){
+                console.log('You clicked it!');
+            });
+            $('input[type=range]').change(function(){
+                $(this).parent().find('span').text($(this).val());
+            });
+        });	
+        //console.log('Foo!');
+        //$(document).ready(function(){
+        //    $('#testBtn').click(function(){
+        //        print('You clicked it!');
+        //    });
+        //});
+    </script>
+</HTML>
