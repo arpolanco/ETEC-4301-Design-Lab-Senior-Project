@@ -108,6 +108,7 @@ class Server{
     
     public static void handleGet(Socket request, String requestType) throws FileNotFoundException, IOException{
         requestType = requestType.split(" ")[1];
+        System.out.println(requestType);
         if(requestType.length() > 1){
             if(requestType.contains("favicon")){
                 return;
@@ -181,7 +182,7 @@ class Server{
                                     break;
                             }
                             System.out.print(value[1]);
-                            System.out.print("to drone ");
+                            System.out.print(" to drone ");
                             System.out.println(droneID);
                             sendValue = (byte) Integer.parseInt(value[1]);
                             try {

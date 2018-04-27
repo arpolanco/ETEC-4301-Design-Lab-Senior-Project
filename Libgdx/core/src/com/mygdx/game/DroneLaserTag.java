@@ -30,7 +30,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     SpriteBatch spriteBatch;
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
     
-    boolean debugServClient = false;
+    boolean debugServClient = true;
 
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
 
@@ -79,15 +79,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         renderer.begin(ShapeType.Filled);
 
         if(debugServClient){
-            if(sendTelemetryByte()){
-                Gdx.gl.glClearColor(0, 0, 1, 1);
-            }else{
-                Gdx.gl.glClearColor(1, 0, 0, 1);
-            }
-            //get and draw video frame from server
-
-            //I assume this runs at 60fps, so do this asyncronously?
-
+            sendTelemetryByte();
         }else{
             Gdx.gl.glClearColor(0, 0, 0, 1);
         }
@@ -152,46 +144,46 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     public boolean sendTelemetryByte(){
         //left stick X: yaw
         //left stick Y: thrust
-        //right stick X: pitch
-        //right stick Y: roll
+        //right stick X: roll
+        //right stick Y: pitch
         //return if nothing changed
-        
         //test quit
         if(gui.quitButton.isPressed(new Vector2(tp.x, tp.y))){
             return drone.client.sendByte((byte) drone.QUIT);
         }
         //test fire
-        if(gui.shootButton.isPressed(new Vector2(tp.x, tp.y))){//add condition for if cooldown is finished
+        if(gui.shootButton.isPressed(new Vector2(tp.x, tp.y))){
             if(drone.canFire())
                 return drone.client.sendByte((byte) drone.FIRE);
         }
         
-        float maxRange = 50.0f; //arbitrary from testing on desktop
+        //float maxRange = 50.0f; //arbitrary from testing on desktop
         byte value;        
         //testing throttle
-        value = drone.getThrottle(gui.leftJoystick.distanceFromOrigin().y + maxRange);
+        value = drone.getThrottle(gui.leftJoystick.percentageDistanceFromRadius().y);
         if(value != drone.previousThrottle){
+            
             drone.previousThrottle = value;
             return drone.client.sendByte(value);
         }
         
         //testing yaw
-        value = drone.getYaw(gui.leftJoystick.distanceFromOrigin().x + maxRange);
+        value = drone.getYaw(gui.leftJoystick.percentageDistanceFromRadius().x);
         if(value != drone.previousYaw){
             drone.previousYaw = value;
             return drone.client.sendByte(value);
         }
         
         //testing roll
-        value = drone.getRoll(gui.rightJoystick.distanceFromOrigin().y + maxRange);
+        value = drone.getRoll(gui.rightJoystick.percentageDistanceFromRadius().x);
         if(value != drone.previousRoll){
             drone.previousRoll = value;
             return drone.client.sendByte(value);
         }
         
         //testing pitch
-        value = drone.getPitch(gui.rightJoystick.distanceFromOrigin().x + maxRange);
-        if(value != drone.previousPitch){
+        value = drone.getPitch(gui.rightJoystick.percentageDistanceFromRadius().y);
+        if(value != drone.previousPitch){            
             drone.previousPitch = value;
             return drone.client.sendByte(value);
         }

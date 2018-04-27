@@ -30,14 +30,14 @@ public class Drone {
     final int ROLL = 0x10;   //0b00 01 0000;
     final int YAW = 0x20;    //0b00 10 0000;
     
-    public final float maxThrottle = 100.0f; //based on joystick size on my desktop
-    public final float maxRoll = 100.0f; //based on joystick size on my desktop
-    public final float maxPitch = 100.0f; //based on joystick size on my desktop
-    public final float maxYaw = 100.0f; //based on joystick size on my desktop
     public int previousThrottle;
     public int previousRoll;
     public int previousPitch;
     public int previousYaw;
+
+    public void setTimeTillShoot(float timeTillShoot) {
+        this.timeTillShoot = timeTillShoot;
+    }
     byte throttleByte = 0;
     byte rollByte = 0;
     byte pitchByte = 0;
@@ -45,7 +45,7 @@ public class Drone {
     
     final Random testData = new Random(); //delete this, for testing purposes
 
-    boolean debugServ = false;
+    boolean debugServ = true;
 
     public Drone()
     {
@@ -85,6 +85,7 @@ public class Drone {
     {
         if(timeTillShoot <= 0)
         {
+            timeTillShoot = cooldown;
             return true;
         }
 
@@ -155,8 +156,7 @@ public class Drone {
     }
 
     public byte getThrottle(float input) {
-        throttle = input;
-        throttle /= maxThrottle;
+        throttle = (input + 1)/2.0f; //percentage of max
         throttleByte = (byte) THRUST;
         throttleByte |= (byte)(0x7f*throttle);
         return throttleByte;
@@ -166,11 +166,10 @@ public class Drone {
         this.throttle = throttle;
     }
 
-    public byte getRoll(float input) {
-        roll = input;
-        roll /= maxRoll;
+    public byte getRoll(float input){
+        roll = (input+1)/2.0f; //percentage of max
         rollByte = (byte) ROLL;
-        rollByte |= (byte)(0xf*roll);
+        rollByte |= (byte)(0xe*roll);
         return rollByte;
     }
 
@@ -179,10 +178,9 @@ public class Drone {
     }
 
     public byte getPitch(float input) {
-        pitch = input;
-        pitch /= maxPitch;
+        pitch = (input + 1)/2.0f; //percentage of max
         pitchByte = (byte) PITCH;
-        pitchByte |= (byte)(0xf*pitch);
+        pitchByte |= (byte)(0xe*pitch);
         return pitchByte;
     }
 
@@ -191,10 +189,9 @@ public class Drone {
     }
 
     public byte getYaw(float input) {
-        yaw = input;
-        yaw /= maxYaw;
+        yaw = (input + 1)/2.0f; //percentage of max
         yawByte = (byte) YAW;
-        yawByte |= (byte)(0xf*yaw);
+        yawByte |= (byte)(0xe*yaw);
         return yawByte;
     }
 
