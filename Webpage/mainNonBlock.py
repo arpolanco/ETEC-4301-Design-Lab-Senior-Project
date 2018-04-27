@@ -6,7 +6,7 @@ import time
 #   https://docs.python.org/25/howto/sockets.html
 
 sSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-addr = '206.21.94.179'#socket.gethostname()
+addr = '206.21.94.120'#socket.gethostname()
 port = 80
 
 sSock.setblocking(0)

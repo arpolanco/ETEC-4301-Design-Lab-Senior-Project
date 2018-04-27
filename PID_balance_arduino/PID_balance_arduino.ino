@@ -79,7 +79,7 @@ void setup() {
 
   time = millis(); //Start counting time in milliseconds
   /*In order to start up the ESCs we have to send a min value
-   * of PWM to them before connecting the battery. Otherwise
+   * of PWM to them before connecting the battery. Otherwsise
    * the ESCs won't start up or enter in the configure mode.
    * The min value is 1000us and max is MAX_THROTus, REMEMBER!*/
 
@@ -153,43 +153,72 @@ void loop() {
           Serial.println(masked);
           return;
         }
-        else{
+        else
+        {
           prySelect = (input & 0x30) >> 4;
           pidSelect = (input & 0x0C) >> 2;
           //if(Serial.available() > 0){
+            while(Serial.available() == 0){
+              
+            }
             input = Serial.read();
             PID_tmp = 5.0f * input / 255.0f;
             switch(prySelect)
             {
               case(0): //Pitch
-                if(prySelect == 0) //Proportional
+                if(pidSelect == 0){ //Proportional
                   kp_p = PID_tmp;
-                else if(prySelect == 1) //Integral
+                  Serial.print("KP_P = ");
+                  Serial.println(PID_tmp);
+                }
+                else if(pidSelect == 1){ //Integral
                   ki_p = PID_tmp / 5.0f;
-                else //Differential
+                  Serial.print("KI_P = ");
+                  Serial.println(PID_tmp / 5.0f);
+                }
+                else{ //Differential
                   kd_p = PID_tmp;
+                  Serial.print("KD_P = ");
+                  Serial.println(PID_tmp);
+                }
               break;
               case(1): //Roll
-                if(prySelect == 0) //Proportional
+                if(pidSelect == 0){ //Proportional
                   kp_r = PID_tmp;
-                else if(prySelect == 1) //Integral
+                  Serial.print("KP_R = ");
+                  Serial.println(PID_tmp);
+                }
+                else if(pidSelect == 1){ //Integral
                   ki_r = PID_tmp  / 5.0f;
-                else //Differential
+                  Serial.print("KI_R = ");
+                  Serial.println(PID_tmp / 5.0f);
+                }
+                else{ //Differential
                   kd_r = PID_tmp;
+                  Serial.print("KD_R = ");
+                  Serial.println(PID_tmp);
+                }
               break;
               case(2): //Yaw
-                if(prySelect == 0) //Proportional
+                if(pidSelect == 0){ //Proportional
                   kp_y = PID_tmp;
-                else if(prySelect == 1) //Integral
+                  Serial.print("KP_Y = ");
+                  Serial.println(PID_tmp);
+                }
+                else if(pidSelect == 1){ //Integral
                   ki_y = PID_tmp / 5.0f;
-                else //Differential
+                  Serial.print("KI_Y = ");
+                  Serial.println(PID_tmp / 5.0f);
+                }
+                else{ //Differential
                   kd_y = PID_tmp;
+                  Serial.print("KD_Y = ");
+                  Serial.println(PID_tmp);
+                }
               break;
               default: //Even more uh-oh
                 Serial.println("You shouldn't see this...(Wrong PRY value)");
               break;
-              
-            //}
           }
           /*Serial.print("Set value to: ");
           Serial.println(PID_tmp);
@@ -198,7 +227,8 @@ void loop() {
           Serial.print(",  PID: ");
           Serial.println(pidSelect);*/
         }
-      }else if(input == 0x30)
+      }
+      else if(input == 0x30)
       {
         Serial.println("FIRE: ");
       }else{
@@ -208,14 +238,13 @@ void loop() {
       }
       
       Serial.println("Received: ");
-      Serial.println(masked);
+      Serial.println(masked);  
       while(Serial.available() > 0){
         Serial.read();
       }
       
       Serial.flush();
     }
-  
     /*///////////////////////////P I D///////////////////////////////////*/
     /*Remember that for the balance we will use just one axis. I've choose the x angle
     to implement the PID with. That means that the x axis of the IMU has to be paralel to
@@ -371,6 +400,10 @@ void loop() {
       }
       Serial.println("Received: ");
       Serial.println(input);
+      while(Serial.available() > 0){
+        Serial.read();
+      }
+      Serial.flush();
     }
   }
 }//end of loop void
