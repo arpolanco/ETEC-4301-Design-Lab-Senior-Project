@@ -19,5 +19,36 @@ class Arduino:
     
     def close(self):
         self.serial.close()
+    
+    def sendByteString(self, bStr, recv=True, doPrint=False):
+        i = 0
+        val = 0
+        if not len(bStr) == 8:
+            print("The String must have 8 bits!")
+        else:
+            while i < len(bStr):
+                c = bStr[i]
+                if c not in "01":
+                    print("error with input string: ", c, " not allowed!")
+                    i = 9
+                else:
+                    tmp = (ord(c)-48)<<(7-i)
+                    val = val + tmp
+                    i += 1
 
+            if doPrint:
+                print(val)
+                print(chr(val))
+            
+            self.send(str(chr(val)).encode("latin_1"), False)
+            
+            if recv:
+                line = self.recv()
+                while not line == b'Received: \r\n':
+                    if not line == b'':
+                        print(line)
+                    line = self.recv()
+        
+                line = self.recv()
+                print("RECV: ",line)
 

@@ -22,6 +22,7 @@ public class Button
     Color mForegroundColor;
     //BitmapFont mFont;
     Rectangle button;
+    boolean triggered = false;
 
     public Button(Vector2 pos, Vector2 size, String text, Color color)
     {
@@ -40,9 +41,18 @@ public class Button
 
         if(button.contains(touch))
         {
-            return true;
+            if(!triggered)
+            {
+                triggered = true;
+                return true;
+            }else{
+                return false;
+            }
+            
+        }else{
+            triggered = false;
+            return false;
         }
-        return false;
     }
 
     public void render(ShapeRenderer renderer) {

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<HTML>
+	<HEAD>
+		<TITLE>Drone Settings</TITLE>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	</HEAD>
+	<BODY>
+		<H1>
+			<u>Drone Settings Page</u>
+		</H1>
+		<div>
+			<p>
+				This Page can be used to change the K values on the drone while in flight.
+			</p>
+            DRONE:
+            <INPUT type="number" value="1" name="drone" id="droneBox">
+            
+            </br>	
+            PITCH:..
+            <br/>
+            <span id="pkp">
+                KP: <INPUT type="range" name="K P P" min="0" max="255">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KPP">Apply</button>
+            </span>
+            <br/>
+            <span id="pki">
+                KI: <INPUT type="range" name="K P I" min="0" max="255">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KPI">Apply</button>
+            </span>
+            <br/>
+            <span id="pkd">
+                KD: <INPUT type="range" name="K P D" min="0" max="255">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KPD">Apply</button>
+            </span>
+            <br/>
+        
+            <br/>
+            <br/>
+            ROLL:....
+            <br/>
+            <span id="rkp">
+                KP: <INPUT type="range" name="K R P" min="0" max="255">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KRP">Apply</button>
+            </span>
+            <br/>
+            <span id="rki">
+                KI: <INPUT type="range" name="K R  I" min="0" max="255">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KRI">Apply</button>
+            </span>
+            <br/>
+            <span id="rkd">
+                KD: <INPUT type="range" name="K R D" min="0" max="255">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KRD">Apply</button>
+            </span>
+            <br/>
+            
+            </br>
+            <br/>
+            YAW:....
+            <br/>
+            <span id="rkp">
+                KP: <INPUT type="range" name="K Y P" min="0" max="255">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KYP">Apply</button>
+            </span>
+            <br/>
+            <span id="rki">
+                KI: <INPUT type="range" name="R Y I" min="0" max="255">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KYI">Apply</button>
+            </span>
+            <br/>
+            <span id="rkd">
+                KD: <INPUT type="range" name="R Y D" min="0" max="255">
+                <span>Not changed</span>
+                <button class="applyBtn" name="KYD">Apply</button>
+            </span>
+            <br/>
+		</div>
+	</BODY>
+    <script>
+        $(document).ready(function(){
+            $('input[type=range]').change(function(){
+                var kVal = ($(this).val() / 256.0) * 5;
+                $(this).parent().find('span').text(kVal);
+            });
+            $('.applyBtn').click(function(){
+                var req = new XMLHttpRequest();
+                var url = window.location.href;
+                if (url.slice(-1) != '/')
+                    url +=  '/';
+                url += '?drone=';
+                url += $('#droneBox').val()
+                url += '&';
+                url +=  $(this).prop('name');
+                url += '='
+                url += $(this).parent().find('input').val();
+                console.log(url);
+                req.open('GET',  url);
+                req.send();
+            });
+        });	
+    </script>
+</HTML>

@@ -9,6 +9,7 @@
 
 #define TUNING 0
 #define FLIGHT 1
+#define PIDTUNE 2
 
 Servo right_front_prop;
 Servo left_front_prop;
@@ -33,6 +34,10 @@ char input_buffer[32];
 float elapsedTime, time, timePrev;
 int i;
 float rad_to_deg = 180/3.141592654;
+
+float PID_tmp = 0;
+byte prySelect = 0;
+byte pidSelect = 0;
 
 float PID_r, PID_p, PID_y, pwmLF, pwmRF, pwmLB, pwmRB, error_r, error_y, error_p, previous_error_r, previous_error_y, previous_error_p;
 
@@ -74,7 +79,7 @@ void setup() {
 
   time = millis(); //Start counting time in milliseconds
   /*In order to start up the ESCs we have to send a min value
-   * of PWM to them before connecting the battery. Otherwise
+   * of PWM to them before connecting the battery. Otherwsise
    * the ESCs won't start up or enter in the configure mode.
    * The min value is 1000us and max is MAX_THROTus, REMEMBER!*/
 
@@ -127,8 +132,8 @@ void loop() {
   if(mode == FLIGHT){
     ///////////////////////////INPUT/////////////////////////////////////
     if(Serial.available() > 0){
-      char input = Serial.read();
-      char masked = input;
+      byte input = Serial.read();
+      byte masked = input;
 
       if(input&0x80){
         masked = input&(0x7f);
@@ -136,17 +141,94 @@ void loop() {
         Serial.println("Throttle: ");        
       }else if(input&0x40)
       {
-        Serial.println("QUIT: ");
-        mode = TUNING;
-        left_front_prop.writeMicroseconds(1000);
-        right_front_prop.writeMicroseconds(1000);
-        left_back_prop.writeMicroseconds(1000);
-        right_back_prop.writeMicroseconds(1000);
-          
-        Serial.println("Received: ");
-        Serial.println(masked);
-        return;
-      }else if(input == 0x30)
+        if(input == 'q'){
+          Serial.println("QUIT: ");
+          mode = TUNING;
+          left_front_prop.writeMicroseconds(1000);
+          right_front_prop.writeMicroseconds(1000);
+          left_back_prop.writeMicroseconds(1000);
+          right_back_prop.writeMicroseconds(1000);
+            
+          Serial.println("Received: ");
+          Serial.println(masked);
+          return;
+        }
+        else
+        {
+          prySelect = (input & 0x30) >> 4;
+          pidSelect = (input & 0x0C) >> 2;
+          //if(Serial.available() > 0){
+            while(Serial.available() == 0){
+              
+            }
+            input = Serial.read();
+            PID_tmp = 5.0f * input / 255.0f;
+            switch(prySelect)
+            {
+              case(0): //Pitch
+                if(pidSelect == 0){ //Proportional
+                  kp_p = PID_tmp;
+                  Serial.print("KP_P = ");
+                  Serial.println(PID_tmp);
+                }
+                else if(pidSelect == 1){ //Integral
+                  ki_p = PID_tmp / 5.0f;
+                  Serial.print("KI_P = ");
+                  Serial.println(PID_tmp / 5.0f);
+                }
+                else{ //Differential
+                  kd_p = PID_tmp;
+                  Serial.print("KD_P = ");
+                  Serial.println(PID_tmp);
+                }
+              break;
+              case(1): //Roll
+                if(pidSelect == 0){ //Proportional
+                  kp_r = PID_tmp;
+                  Serial.print("KP_R = ");
+                  Serial.println(PID_tmp);
+                }
+                else if(pidSelect == 1){ //Integral
+                  ki_r = PID_tmp  / 5.0f;
+                  Serial.print("KI_R = ");
+                  Serial.println(PID_tmp / 5.0f);
+                }
+                else{ //Differential
+                  kd_r = PID_tmp;
+                  Serial.print("KD_R = ");
+                  Serial.println(PID_tmp);
+                }
+              break;
+              case(2): //Yaw
+                if(pidSelect == 0){ //Proportional
+                  kp_y = PID_tmp;
+                  Serial.print("KP_Y = ");
+                  Serial.println(PID_tmp);
+                }
+                else if(pidSelect == 1){ //Integral
+                  ki_y = PID_tmp / 5.0f;
+                  Serial.print("KI_Y = ");
+                  Serial.println(PID_tmp / 5.0f);
+                }
+                else{ //Differential
+                  kd_y = PID_tmp;
+                  Serial.print("KD_Y = ");
+                  Serial.println(PID_tmp);
+                }
+              break;
+              default: //Even more uh-oh
+                Serial.println("You shouldn't see this...(Wrong PRY value)");
+              break;
+          }
+          /*Serial.print("Set value to: ");
+          Serial.println(PID_tmp);
+          Serial.print("PRY: ");
+          Serial.print(prySelect);
+          Serial.print(",  PID: ");
+          Serial.println(pidSelect);*/
+        }
+      }
+      else if(input == 0x30)
       {
         Serial.println("FIRE: ");
       }else{
@@ -156,14 +238,13 @@ void loop() {
       }
       
       Serial.println("Received: ");
-      Serial.println(masked);
+      Serial.println(masked);  
       while(Serial.available() > 0){
         Serial.read();
       }
       
       Serial.flush();
     }
-  
     /*///////////////////////////P I D///////////////////////////////////*/
     /*Remember that for the balance we will use just one axis. I've choose the x angle
     to implement the PID with. That means that the x axis of the IMU has to be paralel to
@@ -194,7 +275,21 @@ void loop() {
     
     error_r = true_r - desired_angle_r;
     error_p = true_p - desired_angle_p;
+
+    float theta_2 = desired_angle_y + 360;
+    float theta_3 = desired_angle_y - 360;
+
+    float err1_y = true_y - theta_2;
+    float err2_y = true_y - theta_3;
     error_y = true_y - desired_angle_y;
+
+    if(abs(err1_y) < abs(error_y)){
+      error_y = err1_y;
+    }
+    if(abs(err2_y) < abs(error_y)) {
+      error_y = err2_y;
+    }
+    
         
     PID_r = get_pid(kp_r, ki_r, kd_r, &pid_i_r, error_r, &previous_error_r);
     PID_p = get_pid(kp_p, ki_p, kd_p, &pid_i_p, error_p, &previous_error_p);
@@ -305,6 +400,10 @@ void loop() {
       }
       Serial.println("Received: ");
       Serial.println(input);
+      while(Serial.available() > 0){
+        Serial.read();
+      }
+      Serial.flush();
     }
   }
 }//end of loop void
