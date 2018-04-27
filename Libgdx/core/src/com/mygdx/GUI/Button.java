@@ -44,15 +44,18 @@ public class Button
             if(!triggered)
             {
                 triggered = true;
+                System.out.println(mText);
                 return true;
             }else{
                 return false;
             }
+
             
         }else{
             triggered = false;
             return false;
         }
+
     }
 
     public void render(ShapeRenderer renderer) {

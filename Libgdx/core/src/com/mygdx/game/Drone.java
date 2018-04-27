@@ -45,7 +45,7 @@ public class Drone {
     
     final Random testData = new Random(); //delete this, for testing purposes
 
-    boolean debugServ = true;
+    boolean debugServ = false;
 
     public Drone()
     {
@@ -83,7 +83,7 @@ public class Drone {
 
     public boolean canFire()
     {
-        if(cooldown <= 0)
+        if(timeTillShoot <= 0)
         {
             return true;
         }

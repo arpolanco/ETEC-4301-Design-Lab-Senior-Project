@@ -39,7 +39,7 @@ public class Joystick {
         this.initPos = initPos;
         this.radius = radius;
         backStick = new Circle(initPos,(float)radius);
-        backCheckCircle = new Circle(initPos, (float) radius*3);
+        backCheckCircle = new Circle(initPos, (float) radius*1.3f);
         frontStickColor = col;
         backStickColor = new Color(frontStickColor);
         backStickColor.mul(.25f);
@@ -50,7 +50,10 @@ public class Joystick {
     {
         if(isTouchingStick(touch))
         {
-            frontStick.setPosition(touch);
+            Vector2 temp = touch.sub(initPos);
+            float l = temp.len();
+            Vector2 j = temp.nor().scl(Math.min(l, backStick.radius)).add(initPos);
+            frontStick.setPosition(j);
         }
 
         //else{

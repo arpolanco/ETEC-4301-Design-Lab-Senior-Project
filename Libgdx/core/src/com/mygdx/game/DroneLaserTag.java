@@ -30,7 +30,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     SpriteBatch spriteBatch;
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
     
-    boolean debugServClient = true;
+    boolean debugServClient = false;
 
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
 
@@ -98,6 +98,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
 
         spriteBatch.end();
         renderer.end();
+        drone.update(Gdx.graphics.getDeltaTime());
     }
 
 
@@ -161,7 +162,8 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         }
         //test fire
         if(gui.shootButton.isPressed(new Vector2(tp.x, tp.y))){//add condition for if cooldown is finished
-            return drone.client.sendByte((byte) drone.FIRE);
+            if(drone.canFire())
+                return drone.client.sendByte((byte) drone.FIRE);
         }
         
         float maxRange = 50.0f; //arbitrary from testing on desktop
