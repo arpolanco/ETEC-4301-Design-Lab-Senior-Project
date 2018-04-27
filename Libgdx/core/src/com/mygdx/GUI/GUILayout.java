@@ -27,6 +27,8 @@ public class GUILayout{
     Texture image;
     float guiWidth;
     float guiHeight;
+    int buttonHeight;
+    int buttonWidth;
 
 
 
@@ -42,11 +44,13 @@ public class GUILayout{
 
     public void init(Viewport viewport) {
         position = new Vector2();
-        joyStickRad = 50;
-        leftJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.25), (int)(viewport.getWorldHeight() *.25)), joyStickRad, Color.RED);
-        rightJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.75), (int)(viewport.getWorldHeight() *.25)), joyStickRad, Color.WHITE);
-        quitButton = new Button(new Vector2((int)(viewport.getWorldWidth()*.1), (int)(viewport.getWorldHeight() *.9)), new Vector2(joyStickRad, joyStickRad),"QUIT", Color.OLIVE);
-        shootButton = new Button(new Vector2((int)(viewport.getWorldWidth()*.5), (int)(viewport.getWorldHeight() *.5)), new Vector2(joyStickRad, joyStickRad),"FIRE", Color.OLIVE);
+        joyStickRad = (int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.00025);
+        buttonHeight = (int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.0002);//(int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.01);
+        buttonWidth = (int)(buttonHeight*2);
+        leftJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.25), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.RED);
+        rightJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.75), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.WHITE);
+        quitButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.7), (int)(viewport.getWorldHeight() *.9)), new Vector2(buttonWidth, buttonHeight),"QUIT", Color.CHARTREUSE);
+        shootButton = new Button(new Vector2((int)((leftJoystick.initPos.x+rightJoystick.initPos.x*.5)-buttonWidth), (int)(viewport.getWorldHeight()*.4)),new Vector2(buttonWidth, buttonHeight),"FIRE", Color.OLIVE);
         healthBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.95)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.FIREBRICK);
         shootBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.9)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.YELLOW);
         guiWidth = viewport.getWorldWidth();
@@ -86,7 +90,7 @@ public class GUILayout{
         //ShootBar.render(renderer);
         spriteBatch.begin();
         //change the image position
-        spriteBatch.draw(image,50, 50);
+        //spriteBatch.draw(image,50, 50);
         leftJoystick.render(renderer);
         rightJoystick.render(renderer);
         healthBar.render(renderer);

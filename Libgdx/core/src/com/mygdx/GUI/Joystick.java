@@ -14,7 +14,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
  */
 
 public class Joystick {
-    Vector2 initPos;
+    public Vector2 initPos;
     //idk if ill keep the touchPos but for now I'll leave it
     Vector2 touchPos;
     Color backStickColor = Color.WHITE;
@@ -39,7 +39,7 @@ public class Joystick {
         this.initPos = initPos;
         this.radius = radius;
         backStick = new Circle(initPos,(float)radius);
-        backStick = new Circle(initPos,(float)radius);
+        backCheckCircle = new Circle(initPos, (float) radius*3);
         frontStickColor = col;
         backStickColor = new Color(frontStickColor);
         backStickColor.mul(.25f);
@@ -53,9 +53,9 @@ public class Joystick {
             frontStick.setPosition(touch);
         }
 
-        else{
-            frontStick.setPosition(initPos);
-        }
+        //else{
+        //    frontStick.setPosition(initPos);
+        //}
 
 
     }
@@ -67,7 +67,7 @@ public class Joystick {
 
     public boolean isTouchingStick(Vector2 touch)
     {
-        return backStick.contains(touch);
+        return backCheckCircle.contains(touch);
     }
 
     public Vector2 getPosition()

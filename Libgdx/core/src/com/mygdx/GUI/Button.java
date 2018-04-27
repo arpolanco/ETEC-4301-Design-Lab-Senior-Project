@@ -17,7 +17,7 @@ import com.sun.org.apache.bcel.internal.generic.RET;
 public class Button
 {
     String mText;
-    Vector2 mPos;
+    public Vector2 mPos;
     Vector2 mSize;
     Color mForegroundColor;
     //BitmapFont mFont;
@@ -29,6 +29,7 @@ public class Button
         mText = text;
         mSize = size;
         mForegroundColor = color;
+        mForegroundColor.a =.05f;
         button = new Rectangle(pos.x,pos.y,size.x,size.y);
         //mFont = new BitmapFont();
 
