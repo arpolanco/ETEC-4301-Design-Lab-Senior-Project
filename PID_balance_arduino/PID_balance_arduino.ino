@@ -6,7 +6,7 @@
 #define MIN_THROT 1290
 #define MAX_THROT 2000
 #define ANGLE_BOUND 30
-#define MAX_DELTA_YAW 30
+#define MAX_DELTA_YAW 10
 
 #define LAZAR_PIN 4
 #define FIRE_DURATION 1 //0.025
@@ -158,13 +158,13 @@ void loop() {
     byte input = Serial.read();
     byte masked = input;
 
-    if(mode == FLIGHT && input&0x80){
+    if(input&0x80){
       masked = input&(0x7f);
       throttle = map(masked, 0, 127, MIN_THROT, MAX_THROT);
-      Serial.println("Throttle: ");        
-    }else if(input&0x40)
-    {
-      if(mode == FLIGHT && input == 'q'){
+      Serial.print("Throttle: ");
+      Serial.println(throttle);        
+    }else if(input&0x40){
+      if(input == 'q'){
         Serial.println("Idle Mode: ");
         mode = TUNING;
         left_front_prop.writeMicroseconds(ZERO_THROT);
@@ -179,9 +179,7 @@ void loop() {
         previous_error_y = 0;
         previous_error_p = 0;
         
-      }else if(mode == TUNING && input == 'p')
-      {
-        //Serial.println("Entering Flight Mode!");
+      }else if(mode == TUNING && input == 'p'){
         mode = FLIGHT;
         Serial.println("FlightMode!");
         r_setpoint = getRoll();
@@ -192,8 +190,7 @@ void loop() {
         flight_values[1] = 7;
         flight_values[2] = 7;
         
-      }
-      else{
+      }else if(input&0x40 && !input&0x80){
         Serial.println("Received: ");
         Serial.println((int)input);
         
@@ -201,10 +198,11 @@ void loop() {
         
         prySelect = (input & 0x30) >> 4;
         pidSelect = (input & 0x0C) >> 2;
-        
-        while(!Serial.available()){
-          ;
-        }
+
+        if(prySelect >= 0 && prySelect < 3 && pidSelect >= 0 && pidSelect < 3){
+          while(!Serial.available()){
+            ;
+          }
           input = Serial.read();
           PID_tmp = 5.0f * input / 255.0f;
           switch(prySelect)
@@ -251,20 +249,25 @@ void loop() {
             default: //Even more uh-oh
               Serial.println("You shouldn't see this...(Wrong PRY value)");
             break;
+          }
+  
+          Serial.println(PID_tmp);
+          //Reset I value in case I is set to zero to avoid weird bugs
+          pid_i_r = 0;
+          pid_i_p = 0;
+          pid_i_y = 0;
+        }else{
+          Serial.println("You shouldn't see this...(Wrong PRY value)");
         }
-
-        Serial.println(PID_tmp);
-        //Reset I value in case I is set to zero to avoid weird bugs
-        pid_i_r = 0;
-        pid_i_p = 0;
-        pid_i_y = 0;
+      }else{
+        Serial.println("Improper Command Format!");
       }
     }else if(input == 0x30)
     {
       Serial.println("FIRE: ");
       digitalWrite(LAZAR_PIN, HIGH);
       firing = true;
-    }else if(mode == FLIGHT){
+    }else{
       Serial.print("Flight Value: ");
       Serial.println((int)(input&0x30)>>4);
       masked = input&0x0f;
