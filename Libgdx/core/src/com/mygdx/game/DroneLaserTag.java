@@ -19,6 +19,7 @@ import com.mygdx.GUI.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     ShapeRenderer renderer;
@@ -31,7 +32,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
     
     boolean debugServClient = false;
-
+    public static HashMap<Integer, Vector2> touchlist;
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
 
     public DroneLaserTag() throws FileNotFoundException {
@@ -49,6 +50,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         Gdx.input.setInputProcessor(this);
         //j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
         spriteBatch = new SpriteBatch();
+        touchlist = new HashMap<Integer, Vector2>();
 
     }
 
@@ -79,20 +81,12 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         renderer.begin(ShapeType.Filled);
 
         if(debugServClient){
-            if(sendTelemetryByte()){
-                Gdx.gl.glClearColor(0, 0, 1, 1);
-            }else{
-                Gdx.gl.glClearColor(1, 0, 0, 1);
-            }
-            //get and draw video frame from server
-
-            //I assume this runs at 60fps, so do this asyncronously?
-
+            sendTelemetryByte();
         }else{
             Gdx.gl.glClearColor(0, 0, 0, 1);
         }
         gui.imageFeed(testImg);
-        gui.update(tp);
+        gui.update(touchlist);
         gui.render(renderer, spriteBatch);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -119,24 +113,36 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (button != Input.Buttons.LEFT || pointer > 0) return false;
+        /*if (button != Input.Buttons.LEFT || pointer > 0) return false;
         viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
         dragging = true;
         return true;
+        */
+        viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
+        if(!touchlist.containsKey(pointer))touchlist.put(pointer, new Vector2(tp.x, tp.y));
+        return false;
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        tp = new Vector3();
+        /*tp = new Vector3();
+        return false;
+        */
+        touchlist.remove(pointer);
         return false;
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        if (!dragging) return false;
+       /* if (!dragging) return false;
         viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
         //System.out.println(tp.toString());
         return true;
+        */
+        viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
+        Vector2 touch=touchlist.get(pointer);
+        if(touch!=null)touch.set(tp.x, tp.y);
+        return false;
     }
 
     @Override
@@ -152,46 +158,46 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     public boolean sendTelemetryByte(){
         //left stick X: yaw
         //left stick Y: thrust
-        //right stick X: pitch
-        //right stick Y: roll
+        //right stick X: roll
+        //right stick Y: pitch
         //return if nothing changed
-        
         //test quit
         if(gui.quitButton.isPressed(new Vector2(tp.x, tp.y))){
             return drone.client.sendByte((byte) drone.QUIT);
         }
         //test fire
-        if(gui.shootButton.isPressed(new Vector2(tp.x, tp.y))){//add condition for if cooldown is finished
+        if(gui.shootButton.isPressed(new Vector2(tp.x, tp.y))){
             if(drone.canFire())
                 return drone.client.sendByte((byte) drone.FIRE);
         }
         
-        float maxRange = 50.0f; //arbitrary from testing on desktop
+        //float maxRange = 50.0f; //arbitrary from testing on desktop
         byte value;        
         //testing throttle
-        value = drone.getThrottle(gui.leftJoystick.distanceFromOrigin().y + maxRange);
+        value = drone.getThrottle(gui.leftJoystick.percentageDistanceFromRadius().y);
         if(value != drone.previousThrottle){
+            
             drone.previousThrottle = value;
             return drone.client.sendByte(value);
         }
         
         //testing yaw
-        value = drone.getYaw(gui.leftJoystick.distanceFromOrigin().x + maxRange);
+        value = drone.getYaw(gui.leftJoystick.percentageDistanceFromRadius().x);
         if(value != drone.previousYaw){
             drone.previousYaw = value;
             return drone.client.sendByte(value);
         }
         
         //testing roll
-        value = drone.getRoll(gui.rightJoystick.distanceFromOrigin().y + maxRange);
+        value = drone.getRoll(gui.rightJoystick.percentageDistanceFromRadius().x);
         if(value != drone.previousRoll){
             drone.previousRoll = value;
             return drone.client.sendByte(value);
         }
         
         //testing pitch
-        value = drone.getPitch(gui.rightJoystick.distanceFromOrigin().x + maxRange);
-        if(value != drone.previousPitch){
+        value = drone.getPitch(gui.rightJoystick.percentageDistanceFromRadius().y);
+        if(value != drone.previousPitch){            
             drone.previousPitch = value;
             return drone.client.sendByte(value);
         }

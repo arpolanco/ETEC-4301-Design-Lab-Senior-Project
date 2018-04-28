@@ -65,7 +65,7 @@ public class Joystick {
 
     public Vector2 distanceFromOrigin()
     {
-        return new Vector2(frontStick.x-backStick.x, frontStick.y-backStick.y);
+        return new Vector2((float) frontStick.x-backStick.x, (float) frontStick.y-backStick.y);
     }
 
     public boolean isTouchingStick(Vector2 touch)
@@ -81,6 +81,13 @@ public class Joystick {
     public void setRadius(int rad)
     {
         radius = rad;
+    }
+    
+    public Vector2 percentageDistanceFromRadius(){
+        Vector2 result = distanceFromOrigin();
+        result.x /= (float) backStick.radius;
+        result.y /= (float) backStick.radius;
+        return result;
     }
 
     public void render(ShapeRenderer renderer) {

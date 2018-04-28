@@ -13,27 +13,37 @@
 				This Page can be used to change the K values on the drone while in flight.
 			</p>
             DRONE:
-            <INPUT type="number" value="1" name="drone" id="droneBox">
-            
+            <INPUT type="number" value="0" name="drone" id="droneBox">
+            <button class="toggleBtn" state="idle">Goto Idle Mode</button> 
+            <button class="toggleBtn" state="flight">Goto Flight Mode</button> 
             </br>	
             PITCH:..
             <br/>
             <span id="pkp">
-                KP: <INPUT type="range" name="K P P" min="0" max="255">
+                KP:
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="K P P" min="0" max="255" scale="kpd" class="range">
+                <button class="increase">&gt;</button>
                 <span>Not changed</span>
-                <button class="applyBtn" name="KPP">Apply</button>
+                <button class="applyBtn" name="KPP" scale="kpd">Apply</button>
             </span>
             <br/>
             <span id="pki">
-                KI: <INPUT type="range" name="K P I" min="0" max="255">
+                KI: 
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="K P I" min="0" max="255" scale="ki" class="range">
+                <button class="increase">&gt;</button>
                 <span>Not changed</span>
-                <button class="applyBtn" name="KPI">Apply</button>
+                <button class="applyBtn" name="KPI" scale="ki">Apply</button>
             </span>
             <br/>
             <span id="pkd">
-                KD: <INPUT type="range" name="K P D" min="0" max="255">
+                KD:
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="K P D" min="0" max="255" scale="kpd" class="range">
+                <button class="increase">&gt;</button>
                 <span>Not changed</span>
-                <button class="applyBtn" name="KPD">Apply</button>
+                <button class="applyBtn" name="KPD" scale="kpd">Apply</button>
             </span>
             <br/>
         
@@ -42,21 +52,30 @@
             ROLL:....
             <br/>
             <span id="rkp">
-                KP: <INPUT type="range" name="K R P" min="0" max="255">
+                KP:
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="K R P" min="0" max="255" scale="kpd" class="range">
+                <button class="increase">&gt;</button>
                 <span>Not changed</span>
-                <button class="applyBtn" name="KRP">Apply</button>
+                <button class="applyBtn" name="KRP" scale="kpd">Apply</button>
             </span>
             <br/>
             <span id="rki">
-                KI: <INPUT type="range" name="K R  I" min="0" max="255">
+                KI:
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="K R  I" min="0" max="255" scale="ki" class="range">
+                <button class="increase">&gt;</button>
                 <span>Not changed</span>
-                <button class="applyBtn" name="KRI">Apply</button>
+                <button class="applyBtn" name="KRI" scale="ki">Apply</button>
             </span>
             <br/>
             <span id="rkd">
-                KD: <INPUT type="range" name="K R D" min="0" max="255">
+                KD:
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="K R D" min="0" max="255" scale="kpd" class="range">
+                <button class="increase">&gt;</button>
                 <span>Not changed</span>
-                <button class="applyBtn" name="KRD">Apply</button>
+                <button class="applyBtn" name="KRD" scale="kpd">Apply</button>
             </span>
             <br/>
             
@@ -65,30 +84,107 @@
             YAW:....
             <br/>
             <span id="rkp">
-                KP: <INPUT type="range" name="K Y P" min="0" max="255">
+                KP:
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="K Y P" min="0" max="255" scale="kpd" class="range">
+                <button class="increase">&gt;</button>
                 <span>Not changed</span>
-                <button class="applyBtn" name="KYP">Apply</button>
+                <button class="applyBtn" name="KYP" scale="kpd">Apply</button>
             </span>
             <br/>
             <span id="rki">
-                KI: <INPUT type="range" name="R Y I" min="0" max="255">
+                KI:
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="R Y I" min="0" max="255" scale="ki" class="range">
+                <button class="increase">&gt;</button>
                 <span>Not changed</span>
-                <button class="applyBtn" name="KYI">Apply</button>
+                <button class="applyBtn" name="KYI" scale="ki">Apply</button>
             </span>
             <br/>
             <span id="rkd">
-                KD: <INPUT type="range" name="R Y D" min="0" max="255">
+                KD:
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="R Y D" min="0" max="255" scale="kpd" class="range">
+                <button class="increase">&gt;</button>
                 <span>Not changed</span>
-                <button class="applyBtn" name="KYD">Apply</button>
+                <button class="applyBtn" name="KYD" scale="kpd">Apply</button>
+            </span>
+            <br/>
+            <br/>
+            THROTTLE...
+            <br/>
+            <span id="throttle">
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="throttle" min="0" max="127" scale="throttle" class="range">
+                <button class="increase">&gt;</button>
+                <span>Not changed</span>
+                <button class="applyBtn" name="throttle" scale="throttle">Apply</button>
+            </span>
+            <br/>
+            <br/>
+            PITCH...
+            <br/>
+            <span id="pitch">
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="pitch" min="0" max="14" scale="pr" class="range">
+                <button class="increase">&gt;</button>
+                <span>Not changed</span>
+                <button class="applyBtn" name="pitch" scale="pr">Apply</button>
+            </span>
+            <br/>
+            <br/>
+            YAW...
+            <br/>
+            <span id="yaw">
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="yaw" min="0" max="14" scale="yaw" class="range"> 
+                <button class="increase">&gt;</button>
+                <span>Not changed</span>
+                <button class="applyBtn" name="yaw" scale="yaw">Apply</button>
+            </span>
+            <br/>
+            <br/>
+            ROLL...
+            <br/>
+            <span id="roll">
+                <button class="decrease">&lt;</button>
+                <INPUT type="range" name="roll" min="0" max="14" scale="pr" class="range">
+                <button class="increase">&gt;</button>
+                <span>Not changed</span>
+                <button class="applyBtn" name="roll" scale="pr">Apply</button>
             </span>
             <br/>
 		</div>
 	</BODY>
     <script>
+        function getFormattedValue(val, scale){
+            if(scale == "kpd"){
+                return (val / 256.0) * 5;
+            }
+            else if(scale == "ki"){
+                return (val / 256.0);
+            }
+            else if(scale == "throttle" || scale == "pr" || scale == "yaw"){
+                return val
+            }
+        }
         $(document).ready(function(){
             $('input[type=range]').change(function(){
-                var kVal = ($(this).val() / 256.0) * 5;
-                $(this).parent().find('span').text(kVal);
+                var val = getFormattedValue($(this).val(), $(this).attr('scale'));
+                /*
+                var val = 0;
+                var scale = $(this).attr('scale');
+                if(scale == "kpd"){
+                    val = ($(this).val() / 256.0) * 5;
+                }
+                else if(scale == "ki"){
+                    val = ($(this).val() / 256.0);
+                }
+                else if(scale == "throttle" || scale == "pr" || scale == "yaw"){
+                    val = $(this).val();
+                }
+                */
+                $(this).parent().find('span').text(val);
             });
             $('.applyBtn').click(function(){
                 var req = new XMLHttpRequest();
@@ -104,6 +200,39 @@
                 console.log(url);
                 req.open('GET',  url);
                 req.send();
+            });
+            $('.toggleBtn').click(function(){
+                var req = new XMLHttpRequest();
+                var url = window.location.href;
+                if (url.slice(-1) != '/')
+                    url +=  '/';
+                url += '?drone=';
+                url += $('#droneBox').val()
+                url += '&';
+                url += $(this).attr('state');
+                url += '=0';
+                console.log(url);
+                req.open('GET',  url);
+                req.send();
+                
+            });
+            $('.decrease').click(function(){
+                var range = $(this).parent().find('.range');
+                var curVal = parseInt(range.val());
+                if(curVal > parseInt(range.attr('min'))){
+                    range.val(curVal - 1);
+                }
+                var val = getFormattedValue(range.val(), range.attr('scale'));
+                $(this).parent().find('span').text(val);
+            });
+            $('.increase').click(function(){
+                var range = $(this).parent().find('.range');
+                var curVal = parseInt(range.val());
+                if(curVal < parseInt(range.attr('max'))){
+                    range.val(curVal + 1);
+                }
+                var val = getFormattedValue(range.val(), range.attr('scale'));
+                $(this).parent().find('span').text(val);
             });
         });	
     </script>

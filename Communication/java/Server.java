@@ -107,6 +107,7 @@ class Server{
     final static byte DIFFERENTIAL = 0b01001000;
     
     public static void handleGet(Socket request, String requestType) throws FileNotFoundException, IOException{
+        System.out.println(requestType);
         requestType = requestType.split(" ")[1];
         if(requestType.length() > 1){
             if(requestType.contains("favicon")){

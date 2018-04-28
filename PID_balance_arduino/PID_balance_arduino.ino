@@ -7,6 +7,18 @@
 #define ANGLE_BOUND 30
 #define MAX_DELTA_YAW 30
 
+#define LAZAR_PIN 4
+#define FIRE_DURATION 1 //0.025
+#define HIT_1 5
+#define HIT_2 6
+#define HIT_3 7
+#define HIT_4 8
+
+#define LF 3
+#define RF 9
+#define LB 10
+#define RB 11
+
 #define TUNING 0
 #define FLIGHT 1
 #define PIDTUNE 2
@@ -30,6 +42,10 @@ float Total_angle[2];
 
 char input_buffer[32];
 
+//Lazer Tag variables
+bool firing;
+float time_firing;
+bool hit_detected;
 
 float elapsedTime, time, timePrev;
 int i;
@@ -79,11 +95,16 @@ void setup() {
 
   time = millis(); //Start counting time in milliseconds
   /*In order to start up the ESCs we have to send a min value
-   * of PWM to them before connecting the battery. Otherwsise
+   * of PWM to them before connecting the battery. Otherwise
    * the ESCs won't start up or enter in the configure mode.
    * The min value is 1000us and max is MAX_THROTus, REMEMBER!*/
 
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(LAZAR_PIN, OUTPUT);
+  pinMode(HIT_1, INPUT);
+  pinMode(HIT_2, INPUT);
+  pinMode(HIT_3, INPUT);
+  pinMode(HIT_4, INPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
 
@@ -94,29 +115,14 @@ void setup() {
 
   MPUSetup();
 
-  //Serial.print("\nWaiting for MPU to Settle!");
-  //int i = 0;
-  //while(i++ < 20){
-  //  if(i%200==0)
-  //  {
-  //    Serial.print(".");
-  //  }
-  //  MPULoop();
-  //}
-  
-  //r_setpoint = getRoll();
-  //p_setpoint = getPitch();
-  //y_setpoint = getYaw();
-
-  //Serial.println("Setpoint Reached!\n");
-
   digitalWrite(LED_BUILTIN, HIGH);
   mode = TUNING;
   Serial.println("Mode = TUNING\n");
+  firing = false;
+  time_firing = 0;
+  hit_detected = false;
   
 }//end of setup void
-/*
-      }*/
 
 
 void loop() {
@@ -124,6 +130,17 @@ void loop() {
   timePrev = time;  // the previous time is stored before the actual time read
   time = millis();  // actual time read
   elapsedTime = (time - timePrev) / 1000; 
+
+  if(firing){
+    //Serial.print("Firing for ");
+    //Serial.println(time_firing);
+    time_firing += elapsedTime;
+    if(time_firing > FIRE_DURATION){
+      time_firing = 0;
+      firing = false;
+      digitalWrite(LAZAR_PIN, LOW);
+    }
+  }
 
   
   /////////////////////////////I M U/////////////////////////////////////
@@ -153,84 +170,54 @@ void loop() {
           Serial.println(masked);
           return;
         }
-        else
-        {
+        else{
           prySelect = (input & 0x30) >> 4;
           pidSelect = (input & 0x0C) >> 2;
           //if(Serial.available() > 0){
-            while(Serial.available() == 0){
-              
-            }
             input = Serial.read();
             PID_tmp = 5.0f * input / 255.0f;
             switch(prySelect)
             {
               case(0): //Pitch
-                if(pidSelect == 0){ //Proportional
+                if(prySelect == 0) //Proportional
                   kp_p = PID_tmp;
-                  Serial.print("KP_P = ");
-                  Serial.println(PID_tmp);
-                }
-                else if(pidSelect == 1){ //Integral
+                else if(prySelect == 1) //Integral
                   ki_p = PID_tmp / 5.0f;
-                  Serial.print("KI_P = ");
-                  Serial.println(PID_tmp / 5.0f);
-                }
-                else{ //Differential
+                else //Differential
                   kd_p = PID_tmp;
-                  Serial.print("KD_P = ");
-                  Serial.println(PID_tmp);
-                }
               break;
               case(1): //Roll
-                if(pidSelect == 0){ //Proportional
+                if(prySelect == 0) //Proportional
                   kp_r = PID_tmp;
-                  Serial.print("KP_R = ");
-                  Serial.println(PID_tmp);
-                }
-                else if(pidSelect == 1){ //Integral
+                else if(prySelect == 1) //Integral
                   ki_r = PID_tmp  / 5.0f;
-                  Serial.print("KI_R = ");
-                  Serial.println(PID_tmp / 5.0f);
-                }
-                else{ //Differential
+                else //Differential
                   kd_r = PID_tmp;
-                  Serial.print("KD_R = ");
-                  Serial.println(PID_tmp);
-                }
               break;
               case(2): //Yaw
-                if(pidSelect == 0){ //Proportional
+                if(prySelect == 0) //Proportional
                   kp_y = PID_tmp;
-                  Serial.print("KP_Y = ");
-                  Serial.println(PID_tmp);
-                }
-                else if(pidSelect == 1){ //Integral
+                else if(prySelect == 1) //Integral
                   ki_y = PID_tmp / 5.0f;
-                  Serial.print("KI_Y = ");
-                  Serial.println(PID_tmp / 5.0f);
-                }
-                else{ //Differential
+                else //Differential
                   kd_y = PID_tmp;
-                  Serial.print("KD_Y = ");
-                  Serial.println(PID_tmp);
-                }
               break;
               default: //Even more uh-oh
                 Serial.println("You shouldn't see this...(Wrong PRY value)");
               break;
+              
+            //}
           }
-          /*Serial.print("Set value to: ");
-          Serial.println(PID_tmp);
-          Serial.print("PRY: ");
-          Serial.print(prySelect);
-          Serial.print(",  PID: ");
-          Serial.println(pidSelect);*/
+          //Reset I value in case I is set to zero to avoid weird bugs
+          pid_i_r = 0;
+          pid_i_p = 0;
+          pid_i_y = 0;
         }
-      }
-      else if(input == 0x30)
+      }else if(input == 0x30)
       {
         Serial.println("FIRE: ");
+        digitalWrite(LAZAR_PIN, HIGH);
+        firing = true;
       }else{
         Serial.println("Flight Value: ");
         masked = input&0x0f;
@@ -238,13 +225,25 @@ void loop() {
       }
       
       Serial.println("Received: ");
-      Serial.println(masked);  
+      Serial.println(masked);
       while(Serial.available() > 0){
         Serial.read();
       }
       
       Serial.flush();
     }
+
+    if(!hit_detected){
+      if(digitalRead(HIT_1) == LOW || digitalRead(HIT_2) == LOW || digitalRead(HIT_3) == LOW || digitalRead(HIT_4) == LOW){
+        hit_detected = true;
+      }
+    }else{
+      if(digitalRead(HIT_1) || digitalRead(HIT_2) || digitalRead(HIT_3) || digitalRead(HIT_4)){
+        Serial.println("Hit Detected!");
+        hit_detected = false;
+      }
+    }
+  
     /*///////////////////////////P I D///////////////////////////////////*/
     /*Remember that for the balance we will use just one axis. I've choose the x angle
     to implement the PID with. That means that the x axis of the IMU has to be paralel to
@@ -377,7 +376,7 @@ void loop() {
   }else{
     if(Serial.available() > 0){
       char input = Serial.read();
-      if(input == 'q')
+      if(input == 'p')
       {
         //Serial.println("Entering Flight Mode!");
         mode = FLIGHT;
@@ -385,6 +384,11 @@ void loop() {
         r_setpoint = getRoll();
         p_setpoint = getPitch();
         y_setpoint = getYaw();
+        throttle = MIN_THROT;
+        flight_values[0] = 7;
+        flight_values[1] = 7;
+        flight_values[2] = 7;
+        
       }
       if(input == 'k'){
         //k change mode
@@ -400,10 +404,6 @@ void loop() {
       }
       Serial.println("Received: ");
       Serial.println(input);
-      while(Serial.available() > 0){
-        Serial.read();
-      }
-      Serial.flush();
     }
   }
 }//end of loop void
