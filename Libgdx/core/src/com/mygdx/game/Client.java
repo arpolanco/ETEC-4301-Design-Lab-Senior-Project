@@ -35,7 +35,7 @@ public class Client extends Thread{
     Protocol protocol;
     SocketHints hints;
     
-    final String HOST = "206.21.94.58";
+    final String HOST = "206.21.94.104";
     final int PORT = 1101;
     
     public Client(){

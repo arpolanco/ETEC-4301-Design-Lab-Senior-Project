@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.util.HashMap;
 
 
 /**
@@ -22,6 +23,8 @@ public class Joystick {
     Circle backStick;
     Circle frontStick;
     Circle backCheckCircle;
+    boolean snapX = true;
+    boolean snapY = true;
 
     int radius;
 
@@ -39,15 +42,47 @@ public class Joystick {
         this.initPos = initPos;
         this.radius = radius;
         backStick = new Circle(initPos,(float)radius);
-        backCheckCircle = new Circle(initPos, (float) radius*1.3f);
+        backCheckCircle = new Circle(initPos, (float) radius*1.5f);
         frontStickColor = col;
         backStickColor = new Color(frontStickColor);
         backStickColor.mul(.25f);
         frontStick = new Circle(initPos,(float)(radius*.5));
     }
 
+    public void setSnapX(boolean b){
+        snapX = b;
+    }
+    public void setSnapY(boolean b){
+        snapY = b;
+    }
+
+    public void update(HashMap<Integer, Vector2> touchlist)
+    {
+        boolean isTouched = false;
+        for(Integer key:touchlist.keySet()) {
+            Vector2 touch = touchlist.get(key);
+            if (isTouchingStick(touch)) {
+                isTouched = true;
+                Vector2 temp = touch.sub(initPos);
+                float l = temp.len();
+                Vector2 j = temp.nor().scl(Math.min(l, backStick.radius)).add(initPos);
+                frontStick.setPosition(j);
+            }
+        }
+        if(!isTouched){
+            //frontStick.setPosition(initPos);
+            if (snapX) {
+                frontStick.setX(initPos.x);
+            }
+            if (snapY) {
+                frontStick.setY(initPos.y);
+            }
+        }
+    }
+
     public void update(Vector2 touch)
     {
+        System.out.println(touch);
         if(isTouchingStick(touch))
         {
             Vector2 temp = touch.sub(initPos);
@@ -56,9 +91,16 @@ public class Joystick {
             frontStick.setPosition(j);
         }
 
-        //else{
-        //    frontStick.setPosition(initPos);
-        //}
+        else{
+            //frontStick.setPosition(initPos);
+            if(snapX) {
+                frontStick.setX(initPos.x);
+            }
+            if(snapY) {
+                frontStick.setY(initPos.y);
+            }
+
+        }
 
 
     }

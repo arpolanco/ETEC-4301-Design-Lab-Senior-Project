@@ -51,6 +51,7 @@ public class GUILayout{
         buttonHeight = (int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.0002);//(int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.01);
         buttonWidth = (int)(buttonHeight*2);
         leftJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.25), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.RED);
+        leftJoystick.setSnapY(false);
         rightJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.75), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.WHITE);
         quitButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.7), (int)(viewport.getWorldHeight() *.9)), new Vector2(buttonWidth, buttonHeight),"QUIT", Color.CHARTREUSE);
         flightButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.3), (int)(viewport.getWorldHeight() *.8)), new Vector2(buttonWidth, buttonHeight),"FLIGHT", Color.CYAN);
@@ -72,7 +73,9 @@ public class GUILayout{
         leftJoystick.update(temp);
         rightJoystick.update(temp);
         */
-
+        leftJoystick.update(touchlist);
+        rightJoystick.update(touchlist);
+        /*
         for(Integer key:touchlist.keySet()){
             Vector2 touchpos=touchlist.get(key);
             System.out.println(touchpos.toString());
@@ -81,7 +84,7 @@ public class GUILayout{
             rightJoystick.update(touchpos);
 
         }
-
+        */
 
         /*if(quitButton.isPressed(temp))
         {
