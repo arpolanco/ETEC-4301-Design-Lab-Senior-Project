@@ -6,8 +6,7 @@ class Arduino:
         self.baud = baud
         print('Connecting on', self.port, 'using baud rate', self.baud, '...')
         self.serial = serial.Serial(self.port, self.baud, timeout=0.01)
-        print('Connected!')
-
+    
     def send(self, data, encode=True):
         if encode:
             self.serial.write(data.encode())
