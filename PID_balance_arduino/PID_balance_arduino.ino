@@ -108,7 +108,6 @@ void setup() {
   pinMode(HIT_4, INPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
-
   left_back_prop.writeMicroseconds(1000); 
   right_back_prop.writeMicroseconds(1000);
   left_front_prop.writeMicroseconds(1000); 
@@ -134,8 +133,6 @@ void loop() {
 
   //Turn off lazar after a short time
   if(firing){
-    //Serial.print("Firing for ");
-    //Serial.println(time_firing);
     time_firing += elapsedTime;
     if(time_firing > FIRE_DURATION){
       time_firing = 0;
@@ -160,9 +157,6 @@ void loop() {
   if(Serial.available() > 0){
     byte input = Serial.read();
     byte masked = input;
-    
-    //Serial.print("sent: ");
-    //Serial.println((int)input);
 
     if(mode == FLIGHT && input&0x80){
       masked = input&(0x7f);
@@ -200,24 +194,27 @@ void loop() {
         
       }
       else{
+        Serial.println("Received: ");
+        Serial.println((int)input);
+        
         Serial.print("Setting K");
+        
         prySelect = (input & 0x30) >> 4;
         pidSelect = (input & 0x0C) >> 2;
+        
         while(!Serial.available()){
           ;
         }
           input = Serial.read();
-          //Serial.print("Second: ");
-          //Serial.println((int)input);
           PID_tmp = 5.0f * input / 255.0f;
           switch(prySelect)
           {
             case(0): //Pitch
-              Serial.print(" P ");
-              if(prySelect == 0){ //Proportional
+              Serial.print(" Pitch ");
+              if(pidSelect == 0){ //Proportional
                 Serial.print("P ");
                 kp_p = PID_tmp;
-              }else if(prySelect == 1){ //Integral
+              }else if(pidSelect == 1){ //Integral
                 Serial.print("I ");
                 ki_p = PID_tmp / 5.0f;
               }else{ //Differential
@@ -226,11 +223,11 @@ void loop() {
               }
               break;
             case(1): //Roll
-              Serial.print(" R ");
-              if(prySelect == 0){ //Proportional
+              Serial.print(" Roll ");
+              if(pidSelect == 0){ //Proportional
                 Serial.print("P ");
                 kp_r = PID_tmp;
-              }else if(prySelect == 1){ //Integral
+              }else if(pidSelect == 1){ //Integral
                 Serial.print("I ");
                 ki_r = PID_tmp  / 5.0f;
               }else{ //Differential
@@ -239,11 +236,11 @@ void loop() {
               }
               break;
             case(2): //Yaw
-              Serial.print(" Y ");
-              if(prySelect == 0){ //Proportional
+              Serial.print(" Yaw ");
+              if(pidSelect == 0){ //Proportional
                 Serial.print("P ");
                 kp_y = PID_tmp;
-              }else if(prySelect == 1){ //Integral
+              }else if(pidSelect == 1){ //Integral
                 Serial.print("I ");
                 ki_y = PID_tmp / 5.0f;
               }else{ //Differential
@@ -268,9 +265,22 @@ void loop() {
       digitalWrite(LAZAR_PIN, HIGH);
       firing = true;
     }else if(mode == FLIGHT){
-      Serial.println("Flight Value: ");
+      Serial.print("Flight Value: ");
+      Serial.println((int)(input&0x30)>>4);
       masked = input&0x0f;
-      flight_values[(input&0x30)>>6] = masked;
+      flight_values[(input&0x30)>>4] = masked;
+      if((int)((input&0x30)>>4) == 0){
+        Serial.print("PITCH SET: ");
+        Serial.println(masked);
+      }else if((int)((input&0x30)>>4) == 1){
+        Serial.print("ROLL SET: ");
+        Serial.println(masked);
+      }else if((int)((input&0x30)>>4) == 2){
+        Serial.print("YAW SET: ");
+        Serial.println(masked);
+      }else{
+        Serial.println("WrongFlightValue!");
+      }
     }
 
     //Make sure we read everything sent already
@@ -282,7 +292,7 @@ void loop() {
     Serial.flush();
 
     Serial.println("Received: ");
-    Serial.println(masked);
+    Serial.println(input);
   }
   /////////////////////////////I M U/////////////////////////////////////
   MPULoop();
