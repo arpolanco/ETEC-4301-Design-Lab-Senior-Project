@@ -36,6 +36,7 @@ class Drone extends Thread{
         private final Semaphore outputLock = new Semaphore(1);
         private final int BUFFER_SIZE = 4096;
         private final int ID;
+        private DroneState mState;
         
         
         private final int THRUST = 0x80;    //0b10 000000;
@@ -51,12 +52,18 @@ class Drone extends Thread{
         private final float maxYaw = 40.0f;
         private final float maxRoll = 40.0f;
         
+        public enum DroneState{
+            IDLE,
+            FLIGHT
+        }
+        
 	public Drone(Socket c, int id_) throws IOException{
             client = c;
             ID = id_;
             droneOutput = client.getOutputStream();
             System.out.print("Drone: ");
             System.out.println(client.toString());
+            mState = DroneState.IDLE;
 	}
         
         @Override
@@ -140,7 +147,14 @@ class Drone extends Thread{
                     System.out.println("Kapow!");
                 }else if(telemetry == QUIT){
                     System.out.println("Shutting down...");
-                    telemetry = 'q';
+                    if(mState == DroneState.IDLE){
+                        telemetry = 'p';
+                        mState = DroneState.FLIGHT;
+                    }
+                    else{
+                        telemetry = 'q';
+                        mState = DroneState.IDLE;
+                    }
                     //controller.close();
                     //System.exit(0);
                 }else if((telemetry & THRUST) == THRUST){
@@ -170,7 +184,7 @@ class Drone extends Thread{
             }
         }
         
-        private void sendData(byte bob){
+        public void sendData(byte bob){
             try {
                 client.getOutputStream().write(bob);
                 client.getOutputStream().flush();
@@ -178,8 +192,11 @@ class Drone extends Thread{
                 System.out.println(ex);
                 System.exit(-1);
             }
-            
         }
+ 
+        public void setState(DroneState s){
+            mState = s;
+        }    
         
         private void receiveDataFromDrone(){
             try {
