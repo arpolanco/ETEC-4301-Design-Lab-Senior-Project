@@ -36,10 +36,12 @@ class Drone extends Thread{
         private final Semaphore outputLock = new Semaphore(1);
         private final int BUFFER_SIZE = 4096;
         private final int ID;
+        private DroneState mState;
         
         
         private final int THRUST = 0x80;    //0b10 000000;
-        private final int QUIT = 0x40;   //0b01 000000;
+        private final int IDLE = 0x40;   //0b01 000000;
+        private final int FLIGHT = 'p';
         
         private final int FIRE = 0x30;   //0b00 11 0000;
         private final int PITCH = 0x0;   //0b00 00 0000;
@@ -51,12 +53,18 @@ class Drone extends Thread{
         private final float maxYaw = 40.0f;
         private final float maxRoll = 40.0f;
         
+        public enum DroneState{
+            IDLE,
+            FLIGHT
+        }
+        
 	public Drone(Socket c, int id_) throws IOException{
             client = c;
             ID = id_;
             droneOutput = client.getOutputStream();
             System.out.print("Drone: ");
             System.out.println(client.toString());
+            mState = DroneState.IDLE;
 	}
         
         @Override
@@ -128,7 +136,7 @@ class Drone extends Thread{
                     System.out.println(ex);
                     System.exit(-1);
                 }
-                if(controller == null){
+                if(controller == null || controller.isClosed()){
                     controllerLock.release();
                     return;
                 }
@@ -136,13 +144,22 @@ class Drone extends Thread{
 
                 telemetry = droneInput.read();
                 //decoding
-                if(telemetry == FIRE){
+                if(telemetry == 0xff){ //connection died
+                    System.out.println("Controller is dead. Sad!");
+                    controllerLock.acquire();
+                    controller.close();
+                    controllerLock.release();
+                    return;
+                }else if(telemetry == FIRE){
                     System.out.println("Kapow!");
-                }else if(telemetry == QUIT){
-                    System.out.println("Shutting down...");
+                }else if(telemetry == IDLE){
+                    System.out.println("Going into idle mode...");
                     telemetry = 'q';
                     //controller.close();
                     //System.exit(0);
+                }else if(telemetry == FLIGHT){
+                    System.out.println("Going into flight mode...");
+                    telemetry = 'p';
                 }else if((telemetry & THRUST) == THRUST){
                     System.out.print("Thrust: ");
                     System.out.println(String.format("%7s", Integer.toBinaryString(telemetry & 0x7f)).replace(' ', '0'));
@@ -170,7 +187,7 @@ class Drone extends Thread{
             }
         }
         
-        private void sendData(byte bob){
+        public void sendData(byte bob){
             try {
                 client.getOutputStream().write(bob);
                 client.getOutputStream().flush();
@@ -178,8 +195,11 @@ class Drone extends Thread{
                 System.out.println(ex);
                 System.exit(-1);
             }
-            
         }
+ 
+        public void setState(DroneState s){
+            mState = s;
+        }    
         
         private void receiveDataFromDrone(){
             try {

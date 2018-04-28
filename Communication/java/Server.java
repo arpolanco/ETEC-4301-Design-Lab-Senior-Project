@@ -20,17 +20,19 @@ class Server{
     final static Pattern droneIDGetter = Pattern.compile("drone=(\\d+)");
     final static Pattern kppGetter = Pattern.compile("K\\+P\\+P=(\\d+)");
     
+    final static int THRUST = 0x80;    //0b10 000000;
+    final static int QUIT = 0x40;   //0b01 000000;
+
+    final static int FIRE = 0x30;   //0b00 11 0000;
+    final static int PITCH = 0x0;   //0b00 00 0000;
+    final static int ROLL = 0x10;   //0b00 01 0000;
+    final static int YAW = 0x20;    //0b00 10 0000;
+    
     public static void handlePhone(Socket phone) throws IOException{
         System.out.println("Phone connected. Checking for drones...");
         if(testingTelemetry){
             InputStream input = phone.getInputStream();
-            final int THRUST = 0x80;    //0b10 000000;
-            final int QUIT = 0x40;   //0b01 000000;
             
-            final int FIRE = 0x30;   //0b00 11 0000;
-            final int PITCH = 0x0;   //0b00 00 0000;
-            final int ROLL = 0x10;   //0b00 01 0000;
-            final int YAW = 0x20;    //0b00 10 0000;
             
             
             final float maxThrust = 180.0f;
@@ -97,18 +99,17 @@ class Server{
         }
     }
     
-    final static byte QUIT = 'q';
-    final static byte PITCH = 0b01000000;
-    final static byte ROLL = 0b01010000;
-    final static byte YAW = 0b01100000;
+    final static byte KPITCH = 0b01000000;
+    final static byte KROLL = 0b01010000;
+    final static byte KYAW = 0b01100000;
     
     final static byte PROPORTIONAL = 0b01000000;
     final static byte INTEGRAL = 0b01000100;
     final static byte DIFFERENTIAL = 0b01001000;
     
     public static void handleGet(Socket request, String requestType) throws FileNotFoundException, IOException{
-        System.out.println(requestType);
         requestType = requestType.split(" ")[1];
+        System.out.println(requestType);
         if(requestType.length() > 1){
             if(requestType.contains("favicon")){
                 return;
@@ -120,6 +121,7 @@ class Server{
                 int droneID = -1;
                 byte sendType = 0;
                 byte sendValue = 0;
+                boolean isKValue = false;
                 
                 Matcher matcher;
                 for(String data : info){
@@ -142,39 +144,74 @@ class Server{
                             switch(value[0]){
                                 case "KPP":
                                     System.out.print("Sending KPP of ");
-                                    sendType = PITCH | PROPORTIONAL;
+                                    sendType = KPITCH | PROPORTIONAL;
+                                    isKValue = true;
                                     break;
                                 case "KPI":
                                     System.out.print("Sending KPI of ");
-                                    sendType = PITCH | INTEGRAL;
+                                    sendType = KPITCH | INTEGRAL;
+                                    isKValue = true;
                                     break;
                                 case "KPD":
                                     System.out.print("Sending KPD of ");
-                                    sendType = PITCH | DIFFERENTIAL;
+                                    sendType = KPITCH | DIFFERENTIAL;
+                                    isKValue = true;
                                     break;
                                 case "KRP":
                                     System.out.print("Sending KRP of ");
-                                    sendType = ROLL | PROPORTIONAL;
+                                    sendType = KROLL | PROPORTIONAL;
+                                    isKValue = true;
                                     break;
                                 case "KRI":
                                     System.out.print("Sending KRI of ");
-                                    sendType = ROLL | INTEGRAL;
+                                    sendType = KROLL | INTEGRAL;
+                                    isKValue = true;
                                     break;
                                 case "KRD":
                                     System.out.print("Sending KRD of ");
-                                    sendType = ROLL | DIFFERENTIAL;
+                                    sendType = KROLL | DIFFERENTIAL;
+                                    isKValue = true;
                                     break;
                                 case "KYP":
                                     System.out.print("Sending KYP of ");
-                                    sendType = YAW | PROPORTIONAL;
+                                    sendType = KYAW | PROPORTIONAL;
+                                    isKValue = true;
                                     break;
                                 case "KYI":
                                     System.out.print("Sending KYI of ");
-                                    sendType = YAW | INTEGRAL;
+                                    sendType = KYAW | INTEGRAL;
+                                    isKValue = true;
                                     break;
                                 case "KYD":
                                     System.out.print("Sending KYD of ");
-                                    sendType = YAW | DIFFERENTIAL;
+                                    sendType = KYAW | DIFFERENTIAL;
+                                    isKValue = true;
+                                    break;
+                                case "throttle":
+                                    System.out.print("Sending throttle of ");
+                                    sendType = (byte)THRUST;
+                                    break;
+                                case "pitch":
+                                    System.out.print("Sending pitch of ");
+                                    sendType = (byte)PITCH;
+                                    break;
+                                case "yaw":
+                                    System.out.print("Sending yaw of ");
+                                    sendType = (byte)YAW;
+                                    break;
+                                case "roll":
+                                    System.out.print("Sending roll of ");
+                                    sendType = (byte)ROLL;
+                                    break;
+                                case "idle":
+                                    System.out.print("Powering down to idle mode ");
+                                    sendType = 'q';
+                                    drones.get(droneID).setState(Drone.DroneState.IDLE);
+                                    break;
+                                case "flight":
+                                    System.out.print("Powering into flight mode ");
+                                    sendType = 'p';
+                                    drones.get(droneID).setState(Drone.DroneState.IDLE);
                                     break;
                                 default:
                                     System.out.print("Other request: ");
@@ -182,11 +219,16 @@ class Server{
                                     break;
                             }
                             System.out.print(value[1]);
-                            System.out.print("to drone ");
+                            System.out.print(" to drone ");
                             System.out.println(droneID);
                             sendValue = (byte) Integer.parseInt(value[1]);
                             try {
-                                drones.get(droneID).sendKValue(sendType, sendValue);
+                                if(isKValue){
+                                    drones.get(droneID).sendKValue(sendType, sendValue);
+                                }
+                                else{
+                                    drones.get(droneID).sendData((byte)(sendType | sendValue));
+                                }
                             } catch (InterruptedException ex) {
                                 System.out.println(ex);
                                 return;

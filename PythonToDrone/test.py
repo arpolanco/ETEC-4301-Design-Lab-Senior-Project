@@ -14,6 +14,7 @@ else:
     raise Exception("You need to pass in the Serial Port and optionally the IP address of the server!!!")
 
 try:
+    ardy = Ard(serialPort)
     if isPhoneBased:
         port = 1101
         print('Connecting to', address, port)
@@ -26,7 +27,6 @@ try:
         buffer.flush()
         #Should be connected to Server at this point
         print("Connected??")
-    ardy = Ard(serialPort)
     print('Succesfuly connected to Arduino!')
     line = ardy.recv()
     while not line == b'Mode = TUNING\n':
@@ -39,7 +39,7 @@ try:
     while(running):
         if isPhoneBased:
             command = server.recv(1) #blocking
-            print(command)
+            #print(command)
             ardy.send(command, False)
             line = ardy.recv()
             while not line == b'Received: \r\n':
@@ -47,7 +47,7 @@ try:
                     print(line)
                 line = ardy.recv()
             line = ardy.recv()
-            print('RECV:', line)
+            print(line)
         else: 
             byte_string = input("Insert the next byte you want to send in the form of 0's and 1's:  ")
             if "q" in byte_string:
@@ -95,4 +95,6 @@ try:
     ardy.close()
     print("All Done")
 except KeyboardInterrupt:
-    print("DEAD!!!!!!!")
+    ardy.sendByteString("01110001")
+    print("Quitting!")
+    print("Good Bye!")
