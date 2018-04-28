@@ -23,6 +23,7 @@ public class GUILayout{
     public Joystick rightJoystick;
     public Button shootButton;
     public Button quitButton;
+    public Button flightButton;
     StatusBar healthBar;
     StatusBar shootBar;
     int joyStickRad;
@@ -52,6 +53,7 @@ public class GUILayout{
         leftJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.25), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.RED);
         rightJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.75), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.WHITE);
         quitButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.7), (int)(viewport.getWorldHeight() *.9)), new Vector2(buttonWidth, buttonHeight),"QUIT", Color.CHARTREUSE);
+        flightButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.3), (int)(viewport.getWorldHeight() *.8)), new Vector2(buttonWidth, buttonHeight),"FLIGHT", Color.CYAN);
         shootButton = new Button(new Vector2((int)((leftJoystick.initPos.x+rightJoystick.initPos.x*.5)-buttonWidth), (int)(viewport.getWorldHeight()*.4)),new Vector2(buttonWidth, buttonHeight),"FIRE", Color.OLIVE);
         healthBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.95)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.FIREBRICK);
         shootBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.9)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.YELLOW);
@@ -109,6 +111,7 @@ public class GUILayout{
         healthBar.render(renderer);
         shootBar.render(renderer);
         quitButton.render(renderer);
+        flightButton.render(renderer);
         shootButton.render(renderer);
         //renderer.line(position, new Vector2((position.x+temp.x * 20), (position.y+temp.y * 20)));
     }

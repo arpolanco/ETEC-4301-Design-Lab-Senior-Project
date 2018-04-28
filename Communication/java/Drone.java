@@ -40,7 +40,8 @@ class Drone extends Thread{
         
         
         private final int THRUST = 0x80;    //0b10 000000;
-        private final int QUIT = 0x40;   //0b01 000000;
+        private final int IDLE = 0x40;   //0b01 000000;
+        private final int FLIGHT = 'p';
         
         private final int FIRE = 0x30;   //0b00 11 0000;
         private final int PITCH = 0x0;   //0b00 00 0000;
@@ -135,7 +136,7 @@ class Drone extends Thread{
                     System.out.println(ex);
                     System.exit(-1);
                 }
-                if(controller == null){
+                if(controller == null || controller.isClosed()){
                     controllerLock.release();
                     return;
                 }
@@ -143,20 +144,22 @@ class Drone extends Thread{
 
                 telemetry = droneInput.read();
                 //decoding
-                if(telemetry == FIRE){
+                if(telemetry == 0xff){ //connection died
+                    System.out.println("Controller is dead. Sad!");
+                    controllerLock.acquire();
+                    controller.close();
+                    controllerLock.release();
+                    return;
+                }else if(telemetry == FIRE){
                     System.out.println("Kapow!");
-                }else if(telemetry == QUIT){
-                    System.out.println("Shutting down...");
-                    if(mState == DroneState.IDLE){
-                        telemetry = 'p';
-                        mState = DroneState.FLIGHT;
-                    }
-                    else{
-                        telemetry = 'q';
-                        mState = DroneState.IDLE;
-                    }
+                }else if(telemetry == IDLE){
+                    System.out.println("Going into idle mode...");
+                    telemetry = 'q';
                     //controller.close();
                     //System.exit(0);
+                }else if(telemetry == FLIGHT){
+                    System.out.println("Going into flight mode...");
+                    telemetry = 'p';
                 }else if((telemetry & THRUST) == THRUST){
                     System.out.print("Thrust: ");
                     System.out.println(String.format("%7s", Integer.toBinaryString(telemetry & 0x7f)).replace(' ', '0'));

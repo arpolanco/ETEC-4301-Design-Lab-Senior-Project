@@ -158,7 +158,7 @@ public class Drone {
     public byte getThrottle(float input) {
         throttle = (input + 1)/2.0f; //percentage of max
         throttleByte = (byte) THRUST;
-        throttleByte |= (byte)(0x7f*throttle);
+        throttleByte |= (byte)(0x7e*throttle);
         return throttleByte;
     }
 
