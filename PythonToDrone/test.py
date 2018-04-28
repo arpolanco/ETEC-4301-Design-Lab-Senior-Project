@@ -34,11 +34,6 @@ try:
             print(line.decode().replace("\n\r", ""))
         line = ardy.recv()
     
-    if isPhoneBased:    
-        val = 0
-        byte_string = '01110001'
-        #ardy.sendByteString(byte_string)
-
     print('Initialization complete! Beginning while loop!')
     running = True
     while(running):
