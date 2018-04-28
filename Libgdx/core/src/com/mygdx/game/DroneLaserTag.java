@@ -19,6 +19,7 @@ import com.mygdx.GUI.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     ShapeRenderer renderer;
@@ -30,8 +31,8 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     SpriteBatch spriteBatch;
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
     
-    boolean debugServClient = true;
-
+    boolean debugServClient = false;
+    public static HashMap<Integer, Vector2> touchlist;
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
 
     public DroneLaserTag() throws FileNotFoundException {
@@ -49,6 +50,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         Gdx.input.setInputProcessor(this);
         //j = new Joystick(new Vector2((float)(viewport.getScreenWidth()*.5), (float)(viewport.getScreenHeight()*.5)), 100, Color.WHITE);
         spriteBatch = new SpriteBatch();
+        touchlist = new HashMap<Integer, Vector2>();
 
     }
 
@@ -84,7 +86,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
             Gdx.gl.glClearColor(0, 0, 0, 1);
         }
         gui.imageFeed(testImg);
-        gui.update(tp);
+        gui.update(touchlist);
         gui.render(renderer, spriteBatch);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -111,24 +113,36 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (button != Input.Buttons.LEFT || pointer > 0) return false;
+        /*if (button != Input.Buttons.LEFT || pointer > 0) return false;
         viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
         dragging = true;
         return true;
+        */
+        viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
+        if(!touchlist.containsKey(pointer))touchlist.put(pointer, new Vector2(tp.x, tp.y));
+        return false;
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        tp = new Vector3();
+        /*tp = new Vector3();
+        return false;
+        */
+        touchlist.remove(pointer);
         return false;
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        if (!dragging) return false;
+       /* if (!dragging) return false;
         viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
         //System.out.println(tp.toString());
         return true;
+        */
+        viewport.getCamera().unproject(tp.set(screenX, screenY, 0));
+        Vector2 touch=touchlist.get(pointer);
+        if(touch!=null)touch.set(tp.x, tp.y);
+        return false;
     }
 
     @Override

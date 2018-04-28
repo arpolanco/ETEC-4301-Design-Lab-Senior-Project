@@ -12,6 +12,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.util.HashMap;
+
 
 public class GUILayout{
 
@@ -63,10 +65,20 @@ public class GUILayout{
 
 
 
-    public void update(Vector3 input) {
-        Vector2 temp = new Vector2(input.x,input.y);
+    public void update(HashMap<Integer, Vector2> touchlist) {
+       /* Vector2 temp = new Vector2(input.x,input.y);
         leftJoystick.update(temp);
         rightJoystick.update(temp);
+        */
+
+        for(Integer key:touchlist.keySet()){
+            Vector2 touchpos=touchlist.get(key);
+            System.out.println(touchpos.toString());
+            //do your manipulation here
+            leftJoystick.update(touchpos);
+            rightJoystick.update(touchpos);
+
+        }
 
 
         /*if(quitButton.isPressed(temp))
