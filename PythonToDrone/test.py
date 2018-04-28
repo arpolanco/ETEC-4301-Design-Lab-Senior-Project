@@ -1,12 +1,20 @@
 from arduino import Arduino as Ard
 import socket
 import io
+import sys
 
 isPhoneBased = False
 
+if len(sys.argv) > 1 and sys.argv[1] != 'None':
+    serialPort = sys.argv[1]
+    if len(sys.argv) > 2 and sys.argv[2] != 'None':
+        address = sys.argv[2]
+        isPhoneBased = True
+else:
+    raise Exception("You need to pass in the Serial Port and optionally the IP address of the server!!!")
+
 try:
     if isPhoneBased:
-        address = "206.21.94.201" #hardcoded as per our design. may need adjusted for testing
         port = 1101
         print('Connecting to', address, port)
         server = socket.socket()
@@ -18,19 +26,14 @@ try:
         buffer.flush()
         #Should be connected to Server at this point
         print("Connected??")
-    ardy = Ard("ttyUSB0")
-
+    ardy = Ard(serialPort)
+    print('Succesfuly connected to Arduino!')
     line = ardy.recv()
     while not line == b'Mode = TUNING\n':
         if not line == b'':
             print(line.decode().replace("\n\r", ""))
         line = ardy.recv()
     
-    if isPhoneBased:    
-        val = 0
-        byte_string = '01110001'
-        #ardy.sendByteString(byte_string)
-
     print('Initialization complete! Beginning while loop!')
     running = True
     while(running):
@@ -71,8 +74,19 @@ try:
                     print('Improperly formatted! Expected k (p|r|y) (p|i|d) #')
                     continue
                 bStr += '00'
+                print(bStr)
                 ardy.sendByteString(bStr, recv=False)
                 bStr = format(int(L[3]), '#010b')
+                val = int(L[3])
+                bStr = ''
+                for i in range(8):
+                    if val & (1 << i):
+                        bStr = '1' + bStr
+                    else:
+                        bStr = '0' + bStr
+
+
+                print(bStr)
                 ardy.sendByteString(bStr)
                 
             else:
