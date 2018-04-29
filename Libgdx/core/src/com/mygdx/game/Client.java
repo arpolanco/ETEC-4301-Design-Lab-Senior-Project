@@ -47,13 +47,12 @@ public class Client extends Thread{
         hints.keepAlive = true;
         socket = Gdx.net.newClientSocket(protocol, HOST, PORT, hints);
         */
-        openSocket();
-        sendMessage("PHONE");
+
         //buffer = new byte[640 * 480 * 5];
         //shout type to server
     }
     
-    private void openSocket(){
+    public void openSocket(){
         
         try {
             socket = new Socket(HOST, PORT);
@@ -62,7 +61,7 @@ public class Client extends Thread{
         } catch (IOException ex) {
             System.exit(-1);
         }
-        
+        sendMessage("PHONE");
     }
     
     public Texture getImage(){

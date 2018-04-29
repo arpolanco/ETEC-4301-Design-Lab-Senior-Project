@@ -1,7 +1,5 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import java.util.Random;
 
@@ -45,11 +43,11 @@ public class Drone {
     
     final Random testData = new Random(); //delete this, for testing purposes
 
-    boolean debugServ = false;
+    boolean isClientConnected = false;
 
     public Drone()
     {
-        if(debugServ)
+        if(isClientConnected)
         {
             client = new Client();
             client.start();
