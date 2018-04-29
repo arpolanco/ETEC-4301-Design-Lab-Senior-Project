@@ -31,7 +31,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
     SpriteBatch spriteBatch;
     Texture testImg = new Texture(Gdx.files.internal("badlogic.jpg"));
     
-    boolean debugServClient = true;
+    boolean debugServClient = false;
     public static HashMap<Integer, Vector2> touchlist;
     //ObjParser op = new ObjParser(new File("C:\\Users\\Dude XPS\\Documents\\Programming\\AI_Labs\\AI_Lab1 Game of Life - Copy\\core\\src\\maps\\map0.obj"));
 
@@ -89,8 +89,11 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         gui.update(touchlist);
         gui.render(renderer, spriteBatch);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        if(gui.ipButton.isPressed(new Vector2(tp.x, tp.y)))
+        {
+            drone.client.HOST = gui.ipButton.mText;
+        };
 
-        spriteBatch.end();
         renderer.end();
         drone.update(Gdx.graphics.getDeltaTime());
     }

@@ -24,6 +24,7 @@ public class GUILayout{
     public Button shootButton;
     public Button quitButton;
     public Button flightButton;
+    public Button ipButton;
     StatusBar healthBar;
     StatusBar shootBar;
     int joyStickRad;
@@ -48,14 +49,15 @@ public class GUILayout{
     public void init(Viewport viewport) {
         position = new Vector2();
         joyStickRad = (int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.00025);
-        buttonHeight = (int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.0002);//(int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.01);
-        buttonWidth = (int)(buttonHeight*2);
+        buttonHeight = (int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.00015);//(int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.01);
+        buttonWidth = (int)(buttonHeight*1.5);
         leftJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.25), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.RED);
         leftJoystick.setSnapY(false);
         rightJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.75), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.WHITE);
-        quitButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.7), (int)(viewport.getWorldHeight() *.9)), new Vector2(buttonWidth, buttonHeight),"QUIT", Color.CHARTREUSE);
-        flightButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.3), (int)(viewport.getWorldHeight() *.8)), new Vector2(buttonWidth, buttonHeight),"FLIGHT", Color.CYAN);
-        shootButton = new Button(new Vector2((int)((leftJoystick.initPos.x+rightJoystick.initPos.x*.5)-buttonWidth), (int)(viewport.getWorldHeight()*.4)),new Vector2(buttonWidth, buttonHeight),"FIRE", Color.OLIVE);
+        quitButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.7), (int)(viewport.getWorldHeight() *.9)), new Vector2(buttonWidth, buttonHeight),"QUIT", false, Color.CHARTREUSE);
+        flightButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.3), (int)(viewport.getWorldHeight() *.8)), new Vector2(buttonWidth, buttonHeight),"FLIGHT", false,Color.CYAN);
+        ipButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.3), (int)(viewport.getWorldHeight() *.5)), new Vector2(buttonWidth, buttonHeight),"IP", true, Color.LIGHT_GRAY);
+        shootButton = new Button(new Vector2((int)((leftJoystick.initPos.x+rightJoystick.initPos.x*.5)-buttonWidth), (int)(viewport.getWorldHeight()*.4)),new Vector2(buttonWidth*1.2f, buttonHeight),"FIRE", false, Color.OLIVE);
         healthBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.95)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.FIREBRICK);
         shootBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.9)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.YELLOW);
         guiWidth = viewport.getWorldWidth();
@@ -75,6 +77,7 @@ public class GUILayout{
         */
         leftJoystick.update(touchlist);
         rightJoystick.update(touchlist);
+
         /*
         for(Integer key:touchlist.keySet()){
             Vector2 touchpos=touchlist.get(key);
@@ -106,16 +109,17 @@ public class GUILayout{
     public void render(ShapeRenderer renderer, SpriteBatch spriteBatch ) {
         //HealthBar.render(renderer);
         //ShootBar.render(renderer);
-        spriteBatch.begin();
+
         //change the image position
         //spriteBatch.draw(image,50, 50);
         leftJoystick.render(renderer);
         rightJoystick.render(renderer);
         healthBar.render(renderer);
         shootBar.render(renderer);
-        quitButton.render(renderer);
-        flightButton.render(renderer);
-        shootButton.render(renderer);
+        quitButton.render(renderer,spriteBatch);
+        flightButton.render(renderer,spriteBatch);
+        shootButton.render(renderer,spriteBatch);
+        ipButton.render(renderer,spriteBatch);
         //renderer.line(position, new Vector2((position.x+temp.x * 20), (position.y+temp.y * 20)));
     }
 

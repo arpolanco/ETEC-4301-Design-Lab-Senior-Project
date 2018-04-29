@@ -45,7 +45,7 @@ public class Drone {
     
     final Random testData = new Random(); //delete this, for testing purposes
 
-    boolean debugServ = true;
+    boolean debugServ = false;
 
     public Drone()
     {
