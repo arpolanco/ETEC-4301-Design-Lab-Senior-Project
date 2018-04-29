@@ -20,6 +20,7 @@ try:
         print('Connecting to', address, port)
         server = socket.socket()
         server.connect((address, port))
+        server.setblocking(0)
         print("Socket created.")
         buffer = server.makefile('w')
         print('Make file')
@@ -38,16 +39,20 @@ try:
     running = True
     while(running):
         if isPhoneBased:
-            command = server.recv(1) #blocking
-            #print(command)
-            ardy.send(command, False)
+            command = b''
+            try:
+                command = server.recv(1) #blocking
+            except socket.error as msg:
+                pass
+            if not command == b'':
+                #print("Command to Send: ", command)
+                ardy.send(command, False)
             line = ardy.recv()
-            while not line == b'Received: \r\n':
-                if not line == b'':
-                    print(line)
+            i = 0
+            while not line == b'' or i > 8:
+                print(line.decode("utf-8"))
                 line = ardy.recv()
-            line = ardy.recv()
-            print(line)
+                i += 1
         else: 
             byte_string = input("Insert the next byte you want to send in the form of 0's and 1's:  ")
             if "q" in byte_string:

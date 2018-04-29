@@ -6,7 +6,7 @@
 #define MIN_THROT 1290
 #define MAX_THROT 2000
 #define ANGLE_BOUND 30
-#define MAX_DELTA_YAW 10
+#define MAX_DELTA_YAW 30
 
 #define LAZAR_PIN 4
 #define FIRE_DURATION 1 //0.025
@@ -64,15 +64,15 @@ float pid_i_y=0;
 float pid_i_p=0;
 
 /////////////////PID CONSTANTS/////////////////
-double kp_r=0.75;//3.55
-double ki_r=0.05;//0.005;//0.003
-double kd_r=0.30;//2.05
-double kp_y=0.5;//3.55
-double ki_y=0.05;//0.005;//0.003
-double kd_y=0.2;//2.05
-double kp_p=0.75;//3.55
-double ki_p=0.05;//0.005;//0.003
-double kd_p=0.30;//2.05
+double kp_r=5.0;//3.55
+double ki_r=0.005;//0.005;//0.003
+double kd_r=5.0;//2.05
+double kp_y=4.5;//3.55
+double ki_y=0.005;//0.005;//0.003
+double kd_y=4.5;//2.05
+double kp_p=5.0;//3.55
+double ki_p=0.005;//0.005;//0.003
+double kd_p=5.0;//2.05
 ///////////////////////////////////////////////
 
 double throttle=MIN_THROT; //initial value of throttle to the motors
@@ -84,6 +84,8 @@ float desired_angle_p = 0;
 float desired_angle_r = 0;
 float desired_angle_y = 0;
 float delta_yaw = 0;
+
+char S[32];
 
 void setup() {
   Serial.begin(115200);
@@ -142,29 +144,46 @@ void loop() {
   }
 
   //Hit detection
-  if(!hit_detected){
-    if(digitalRead(HIT_1) == LOW || digitalRead(HIT_2) == LOW || digitalRead(HIT_3) == LOW || digitalRead(HIT_4) == LOW){
-      hit_detected = true;
-    }
-  }else{
-    if(digitalRead(HIT_1) || digitalRead(HIT_2) || digitalRead(HIT_3) || digitalRead(HIT_4)){
-      Serial.println("Hit Detected!");
-      hit_detected = false;
-    }
-  }
+  //if(!hit_detected){
+  //  if(digitalRead(HIT_1) == LOW || digitalRead(HIT_2) == LOW || digitalRead(HIT_3) == LOW || digitalRead(HIT_4) == LOW){
+  //    hit_detected = true;
+  //  }
+  //}else{
+  //  if(digitalRead(HIT_1) || digitalRead(HIT_2) || digitalRead(HIT_3) || digitalRead(HIT_4)){
+  //    Serial.println("Hit Detected!");
+  //    hit_detected = false;
+  //  }
+  //}
 
   //Receive commands from controller
   if(Serial.available() > 0){
     byte input = Serial.read();
     byte masked = input;
 
-    if(input&0x80){
+    if(input == 0xff){
+      if(mode != TUNING){
+        Serial.println("The Sever must have broken!");
+        Serial.println("Idle Mode: ");
+        mode = TUNING;
+        left_front_prop.writeMicroseconds(ZERO_THROT);
+        right_front_prop.writeMicroseconds(ZERO_THROT);
+        left_back_prop.writeMicroseconds(ZERO_THROT);
+        right_back_prop.writeMicroseconds(ZERO_THROT);
+        
+        pid_i_r = 0;
+        pid_i_p = 0;
+        pid_i_y = 0;
+        previous_error_r = 0;
+        previous_error_y = 0;
+        previous_error_p = 0;
+      }
+    }else if(input&0x80){
       masked = input&(0x7f);
-      throttle = map(masked, 0, 127, MIN_THROT, MAX_THROT);
+      throttle = map(masked, 0, 126, MIN_THROT, MAX_THROT);
       Serial.print("Throttle: ");
       Serial.println(throttle);        
-    }else if(input&0x40){
-      if(input == 'q'){
+    }else if(input&0x40){ //q, p, or k value setting
+      if(mode == FLIGHT && input == 'q'){
         Serial.println("Idle Mode: ");
         mode = TUNING;
         left_front_prop.writeMicroseconds(ZERO_THROT);
@@ -190,12 +209,9 @@ void loop() {
         flight_values[1] = 7;
         flight_values[2] = 7;
         
-      }else if(input&0x40 && !input&0x80){
-        Serial.println("Received: ");
-        Serial.println((int)input);
-        
-        Serial.print("Setting K");
-        
+      }else if(input == 'p' || input == 'q'){
+        Serial.println("State Remaining the same!");
+      }else{
         prySelect = (input & 0x30) >> 4;
         pidSelect = (input & 0x0C) >> 2;
 
@@ -203,6 +219,9 @@ void loop() {
           while(!Serial.available()){
             ;
           }
+          
+          Serial.print("Setting K");
+          
           input = Serial.read();
           PID_tmp = 5.0f * input / 255.0f;
           switch(prySelect)
@@ -210,39 +229,39 @@ void loop() {
             case(0): //Pitch
               Serial.print(" Pitch ");
               if(pidSelect == 0){ //Proportional
-                Serial.print("P ");
+                Serial.print("Proportional ");
                 kp_p = PID_tmp;
               }else if(pidSelect == 1){ //Integral
-                Serial.print("I ");
+                Serial.print("Integral ");
                 ki_p = PID_tmp / 5.0f;
               }else{ //Differential
-                Serial.print("D ");
+                Serial.print("Differential ");
                 kd_p = PID_tmp;
               }
               break;
             case(1): //Roll
               Serial.print(" Roll ");
               if(pidSelect == 0){ //Proportional
-                Serial.print("P ");
+                Serial.print("Proportional ");
                 kp_r = PID_tmp;
               }else if(pidSelect == 1){ //Integral
-                Serial.print("I ");
+                Serial.print("Integral ");
                 ki_r = PID_tmp  / 5.0f;
               }else{ //Differential
-                Serial.print("D ");
+                Serial.print("Differential ");
                 kd_r = PID_tmp;
               }
               break;
             case(2): //Yaw
               Serial.print(" Yaw ");
               if(pidSelect == 0){ //Proportional
-                Serial.print("P ");
+                Serial.print("Proportional ");
                 kp_y = PID_tmp;
               }else if(pidSelect == 1){ //Integral
-                Serial.print("I ");
+                Serial.print("Integral ");
                 ki_y = PID_tmp / 5.0f;
               }else{ //Differential
-                Serial.print("D ");
+                Serial.print("Differential ");
                 kd_y = PID_tmp;
               }
               break;
@@ -259,8 +278,6 @@ void loop() {
         }else{
           Serial.println("You shouldn't see this...(Wrong PRY value)");
         }
-      }else{
-        Serial.println("Improper Command Format!");
       }
     }else if(input == 0x30)
     {
@@ -268,8 +285,8 @@ void loop() {
       digitalWrite(LAZAR_PIN, HIGH);
       firing = true;
     }else{
-      Serial.print("Flight Value: ");
-      Serial.println((int)(input&0x30)>>4);
+      //Serial.print("Flight Value: ");
+      //Serial.println((int)(input&0x30)>>4);
       masked = input&0x0f;
       flight_values[(input&0x30)>>4] = masked;
       if((int)((input&0x30)>>4) == 0){
@@ -288,24 +305,22 @@ void loop() {
 
     //Make sure we read everything sent already
     while(Serial.available() > 0){
-      Serial.print("Garbage: ");
-      Serial.print(Serial.read());
-      Serial.println("");
+      //Serial.print("Garbage: ");
+      //Serial.print(Serial.read());
+      //Serial.println("");
+      Serial.read();
     }
     Serial.flush();
 
-    Serial.println("Received: ");
-    Serial.println(input);
+    //Serial.println("Received: ");
+    //Serial.println(input);
   }
   /////////////////////////////I M U/////////////////////////////////////
   MPULoop();
   
   if(mode == FLIGHT){ 
     /*///////////////////////////P I D///////////////////////////////////*/
-    /*Remember that for the balance we will use just one axis. I've choose the x angle
-    to implement the PID with. That means that the x axis of the IMU has to be paralel to
-    the balance*/
-    
+    /*   
     /*First calculate the error between the desired angle and 
     *the real measured angle*/
     float true_r = (r_setpoint - getRoll());
@@ -342,8 +357,24 @@ void loop() {
     if(abs(err2_y) < abs(error_y)) {
       error_y = err2_y;
     }
+
+    if(abs(error_r) > 40 || abs(error_p) > 40){
+      mode = TUNING;     
+      left_front_prop.writeMicroseconds(ZERO_THROT);
+      right_front_prop.writeMicroseconds(ZERO_THROT);
+      left_back_prop.writeMicroseconds(ZERO_THROT);
+      right_back_prop.writeMicroseconds(ZERO_THROT);
+      
+      pid_i_r = 0;
+      pid_i_p = 0;
+      pid_i_y = 0;
+      previous_error_r = 0;
+      previous_error_y = 0;
+      previous_error_p = 0;
+      return;
+    }
     
-        
+    //Calculate PID Error Values
     PID_r = get_pid(kp_r, ki_r, kd_r, &pid_i_r, error_r, &previous_error_r);
     PID_p = get_pid(kp_p, ki_p, kd_p, &pid_i_p, error_p, &previous_error_p);
     PID_y = get_pid(kp_y, ki_y, kd_y, &pid_i_y, error_y, &previous_error_y);
