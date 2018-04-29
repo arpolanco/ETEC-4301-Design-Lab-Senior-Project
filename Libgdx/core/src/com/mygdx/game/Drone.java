@@ -167,10 +167,10 @@ public class Drone {
     }
 
     public byte getRoll(float input){
-        roll = (input+1)/2.0f; //percentage of max
+        roll = 1 - (input+1)/2.0f; //percentage of max
         rollByte = (byte) ROLL;
         rollByte |= (byte)(0xe*roll);
-        return (byte)((byte)14 - rollByte);
+        return rollByte;
     }
 
     public void setRoll(float roll) {
