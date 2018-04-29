@@ -2,7 +2,10 @@
 <HTML>
 	<HEAD>
 		<TITLE>Drone Settings</TITLE>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <!--
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        -->
+        <script src="jquery-3.3.1.min.js"></script>
 	</HEAD>
 	<BODY>
 		<H1>
@@ -22,7 +25,7 @@
             <span id="pkp">
                 KP:
                 <button class="decrease">&lt;</button>
-                <INPUT type="range" name="K P P" min="0" max="255" scale="kpd" class="range">
+                <INPUT type="range" name="K P P" min="0" max="254" scale="kpd" class="range">
                 <button class="increase">&gt;</button>
                 <span>Not changed</span>
                 <button class="applyBtn" name="KPP" scale="kpd">Apply</button>
@@ -31,7 +34,7 @@
             <span id="pki">
                 KI: 
                 <button class="decrease">&lt;</button>
-                <INPUT type="range" name="K P I" min="0" max="255" scale="ki" class="range">
+                <INPUT type="range" name="K P I" min="0" max="254" scale="ki" class="range">
                 <button class="increase">&gt;</button>
                 <span>Not changed</span>
                 <button class="applyBtn" name="KPI" scale="ki">Apply</button>
@@ -40,7 +43,7 @@
             <span id="pkd">
                 KD:
                 <button class="decrease">&lt;</button>
-                <INPUT type="range" name="K P D" min="0" max="255" scale="kpd" class="range">
+                <INPUT type="range" name="K P D" min="0" max="254" scale="kpd" class="range">
                 <button class="increase">&gt;</button>
                 <span>Not changed</span>
                 <button class="applyBtn" name="KPD" scale="kpd">Apply</button>
@@ -54,7 +57,7 @@
             <span id="rkp">
                 KP:
                 <button class="decrease">&lt;</button>
-                <INPUT type="range" name="K R P" min="0" max="255" scale="kpd" class="range">
+                <INPUT type="range" name="K R P" min="0" max="254" scale="kpd" class="range">
                 <button class="increase">&gt;</button>
                 <span>Not changed</span>
                 <button class="applyBtn" name="KRP" scale="kpd">Apply</button>
@@ -63,7 +66,7 @@
             <span id="rki">
                 KI:
                 <button class="decrease">&lt;</button>
-                <INPUT type="range" name="K R  I" min="0" max="255" scale="ki" class="range">
+                <INPUT type="range" name="K R  I" min="0" max="254" scale="ki" class="range">
                 <button class="increase">&gt;</button>
                 <span>Not changed</span>
                 <button class="applyBtn" name="KRI" scale="ki">Apply</button>
@@ -72,7 +75,7 @@
             <span id="rkd">
                 KD:
                 <button class="decrease">&lt;</button>
-                <INPUT type="range" name="K R D" min="0" max="255" scale="kpd" class="range">
+                <INPUT type="range" name="K R D" min="0" max="254" scale="kpd" class="range">
                 <button class="increase">&gt;</button>
                 <span>Not changed</span>
                 <button class="applyBtn" name="KRD" scale="kpd">Apply</button>
@@ -86,7 +89,7 @@
             <span id="rkp">
                 KP:
                 <button class="decrease">&lt;</button>
-                <INPUT type="range" name="K Y P" min="0" max="255" scale="kpd" class="range">
+                <INPUT type="range" name="K Y P" min="0" max="254" scale="kpd" class="range">
                 <button class="increase">&gt;</button>
                 <span>Not changed</span>
                 <button class="applyBtn" name="KYP" scale="kpd">Apply</button>
@@ -95,7 +98,7 @@
             <span id="rki">
                 KI:
                 <button class="decrease">&lt;</button>
-                <INPUT type="range" name="R Y I" min="0" max="255" scale="ki" class="range">
+                <INPUT type="range" name="R Y I" min="0" max="254" scale="ki" class="range">
                 <button class="increase">&gt;</button>
                 <span>Not changed</span>
                 <button class="applyBtn" name="KYI" scale="ki">Apply</button>
@@ -104,11 +107,14 @@
             <span id="rkd">
                 KD:
                 <button class="decrease">&lt;</button>
-                <INPUT type="range" name="R Y D" min="0" max="255" scale="kpd" class="range">
+                <INPUT type="range" name="R Y D" min="0" max="254" scale="kpd" class="range">
                 <button class="increase">&gt;</button>
                 <span>Not changed</span>
                 <button class="applyBtn" name="KYD" scale="kpd">Apply</button>
             </span>
+            <br/>
+            <br/>
+            <button id="allK">Apply all K values</button>
             <br/>
             <br/>
             THROTTLE...
@@ -233,6 +239,14 @@
                 }
                 var val = getFormattedValue(range.val(), range.attr('scale'));
                 $(this).parent().find('span').text(val);
+            });
+            $('#allK').click(function(){
+                $('.applyBtn').each(function(){
+                    var s = $(this).prop('name');
+                    if(s.includes('K')){
+                        $(this).click();
+                    }
+                });
             });
         });	
     </script>
