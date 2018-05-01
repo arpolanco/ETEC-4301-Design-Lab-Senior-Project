@@ -144,7 +144,7 @@ class Drone extends Thread{
 
                 telemetry = droneInput.read();
                 //decoding
-                if(telemetry == 0xff){ //connection died
+                if(telemetry == -1){ //connection died
                     System.out.println("Controller is dead. Sad!");
                     controllerLock.acquire();
                     controller.close();

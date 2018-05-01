@@ -114,6 +114,19 @@ class Server{
             if(requestType.contains("favicon")){
                 return;
             }
+            if(requestType.contains("jquery")){
+                int count;
+                byte[] buffer = new byte[2048];
+                request.getOutputStream().write("HTTP/1.0 200 OK\r\n\r\n".getBytes());
+                FileInputStream webpage = new FileInputStream("jquery.js");
+                while((count = webpage.read(buffer)) > 0){
+                  request.getOutputStream().write(buffer, 0, count);
+                }
+                request.getOutputStream().flush();
+                request.close();
+                webpage.close();
+                return;
+            }
             requestType = requestType.split("\\?")[1];
             String[] info = requestType.split("&");
             if(info.length > 1){
@@ -266,26 +279,28 @@ class Server{
                 newConnection = host.accept();
                 connectionTypeReader = new BufferedReader(new InputStreamReader(new BufferedInputStream(newConnection.getInputStream(), BUFFER_SIZE)));
                 connectionType = connectionTypeReader.readLine(); //blocking
-                switch (connectionType) {
-                    case "DRONE":
-                        handleDrone(newConnection);
-                        break;
-                    case "PHONE":
-                        handlePhone(newConnection);
-                        break;
-                    default:
-                        requestType = connectionType.substring(0, 4);
-                        if(requestType.equals("GET ")){
-                            System.out.println(connectionType);
-                            handleGet(newConnection, connectionType);
-                        }else if(requestType.equals("POST")){
-                            System.out.println("Received POST request. Send data to specified drone and kill this connection");
-                            System.out.println(connectionType);
-                            newConnection.close();
-                        }else{
-                            System.out.println("Unknown connection type " + requestType);
-                        }
-                        break;
+                if(connectionType != null){
+                    switch (connectionType) {
+                        case "DRONE":
+                            handleDrone(newConnection);
+                            break;
+                        case "PHONE":
+                            handlePhone(newConnection);
+                            break;
+                        default:
+                            requestType = connectionType.substring(0, 4);
+                            if(requestType.equals("GET ")){
+                                System.out.println(connectionType);
+                                handleGet(newConnection, connectionType);
+                            }else if(requestType.equals("POST")){
+                                System.out.println("Received POST request. Send data to specified drone and kill this connection");
+                                System.out.println(connectionType);
+                                newConnection.close();
+                            }else{
+                                System.out.println("Unknown connection type " + requestType);
+                            }
+                            break;
+                    }
                 }
             }
             /*
