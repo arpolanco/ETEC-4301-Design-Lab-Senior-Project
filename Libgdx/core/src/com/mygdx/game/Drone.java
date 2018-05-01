@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Vector3;
 import java.util.Random;
 
 public class Drone {
-    Client client;
+    public Client client;
     GameMode game = new GameMode("Game1");
     float health;
     public float timeTillShoot;
@@ -40,10 +40,11 @@ public class Drone {
     byte rollByte = 0;
     byte pitchByte = 0;
     byte yawByte = 0;
+    private static Drone instance;
     
     final Random testData = new Random(); //delete this, for testing purposes
 
-    boolean isClientConnected = false;
+    public boolean isClientConnected = false;
 
     public Drone()
     {
@@ -57,7 +58,14 @@ public class Drone {
 
     }
 
-
+    public static Drone getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new Drone();
+        }
+        return instance;
+    }
     public void getMovementInput()
     {
         //need to grab from gui input
