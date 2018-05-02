@@ -266,9 +266,9 @@ void MPULoop(float dt){
 
     // wait for MPU interrupt or extra packet(s) available
     if(!mpuInterrupt && fifoCount < packetSize) {
-      Serial.println("No Data Available Yet!");
       time_since_last_good_packet += dt;
       if(time_since_last_good_packet > 3){
+        Serial.println("Waiting too long for new Packet!!!!!");
         MPUSetup();
       }
       return;
