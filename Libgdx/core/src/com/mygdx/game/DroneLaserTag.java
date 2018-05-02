@@ -90,14 +90,17 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
         if(gui.displayIPButton == true)
         {
+            //System.out.println("gui.displayIPButton");
             if(gui.ipButton.isPressed(new Vector2(tp.x, tp.y)))
             {
                 if(gui.displayIPButton == true)
                 {
                     if(gui.ipButton.isTextGiven == true)
                     {
+                        drone.client = new Client();
+                        drone.client.start();
                         drone.client.HOST = gui.ipButton.mText;
-                        // drone.client.openSocket();
+                        drone.client.openSocket();
                         if(drone.client.isConnected == false)
                             gui.ipButton.isTextGiven = false;
                         else
@@ -105,6 +108,25 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
                     }
                 }
 
+            }
+            else if(gui.ipButton.isTextGiven)
+            {
+                System.out.println("Connecting!");
+                drone.client = new Client();
+                drone.client.start();
+                drone.client.HOST = gui.ipButton.mText;
+                drone.client.openSocket();
+
+                if(drone.client.isConnected == false) {
+                    System.out.println("Connection failed!");
+                    gui.ipButton.isTextGiven = false;
+                    gui.ipButton.hasSubmitted = false;
+                }
+                else {
+                    System.out.println("Connected!");
+                    gui.setDisplayIPButton(false);
+                    drone.isClientConnected = true;
+                }
             }
         }
 
