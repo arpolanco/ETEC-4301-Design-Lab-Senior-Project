@@ -86,7 +86,7 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         }
         gui.imageFeed(testImg);
         gui.update(touchlist);
-        gui.render(renderer, spriteBatch);
+        gui.render(renderer);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
         if(gui.displayIPButton == true)
         {

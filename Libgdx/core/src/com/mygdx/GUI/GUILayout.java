@@ -107,7 +107,7 @@ public class GUILayout{
 
 
 
-    public void render(ShapeRenderer renderer, Viewport view) {
+    public void render(ShapeRenderer renderer) {
 
         //spriteBatch.draw(image,50, 50);
         batch.getProjectionMatrix().setToOrtho2D(0, 0, guiWidth, guiHeight);
@@ -132,8 +132,8 @@ public class GUILayout{
 
         else
         {
-            ipButton.render(renderer);
-            batch.draw(fi,ipButton.mPos.x,ipButton.mPos.y,ipButton.mSize.x,ipButton.mSize.y);
+            //ipButton.render(renderer);
+            batch.draw(ip,ipButton.mPos.x,ipButton.mPos.y,ipButton.mSize.x,ipButton.mSize.y);
         }
 
         batch.end();
