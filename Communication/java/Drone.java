@@ -121,26 +121,48 @@ class Drone extends Thread{
         
         public void sendKValue(byte type, byte value) throws IOException, InterruptedException{
             outputLock.acquire();
+            if(!stillKicking()){
+                outputLock.release();
+                return;
+            }
             droneOutput.write(type);
             droneOutput.write(value);
             droneOutput.flush();
             outputLock.release();
         }
         
+        private boolean stillKicking(){ //apparently this does jack shit
+            if(client.isClosed()){
+                System.out.print("Drone ");
+                System.out.print(ID);
+                System.out.println(" is dead!");
+                return false;
+            }
+            //System.out.println("All clear apparently");
+            return true;
+        }
+        
+        public boolean hasController(){
+            try {
+                controllerLock.acquire();
+            } catch (InterruptedException ex) {
+                System.out.println(ex);
+                System.exit(-1);
+            }
+            if(controller == null || controller.isClosed()){
+                controllerLock.release();
+                return false;
+            }
+            controllerLock.release();
+            return true;
+        }
+        
         private void receiveAndSendTelemetry() throws InterruptedException{
             int telemetry;
             try {
-                try {
-                    controllerLock.acquire();
-                } catch (InterruptedException ex) {
-                    System.out.println(ex);
-                    System.exit(-1);
-                }
-                if(controller == null || controller.isClosed()){
-                    controllerLock.release();
+                if(!hasController()){
                     return;
                 }
-                controllerLock.release();
 
                 telemetry = droneInput.read();
                 //decoding
@@ -178,9 +200,25 @@ class Drone extends Thread{
                     System.out.println(String.format("%4s", Integer.toBinaryString(telemetry & 0xf)).replace(' ', '0'));
                 }
                 outputLock.acquire();
+                if(!stillKicking()){
+                    outputLock.release();
+                    return;
+                }
                 droneOutput.write((byte) telemetry);
                 droneOutput.flush();
                 outputLock.release();
+            } catch (IOException ex) {
+                kill();
+            }
+        }
+        
+        private void kill(){
+            System.out.print("Drone ");
+            System.out.print(ID);
+            System.out.println(" is dead!");
+            try {
+                client.close();
+                System.out.println(client.isClosed());
             } catch (IOException ex) {
                 System.out.println(ex);
                 System.exit(-1);
@@ -189,11 +227,19 @@ class Drone extends Thread{
         
         public void sendData(byte bob){
             try {
-                client.getOutputStream().write(bob);
-                client.getOutputStream().flush();
+                try {
+                    outputLock.acquire();
+                    if(!stillKicking()){
+                        outputLock.release();
+                        return;
+                    }
+                    client.getOutputStream().write(bob);
+                    client.getOutputStream().flush();
+                    outputLock.release();
+                } catch (InterruptedException ex) {
+                }
             } catch (IOException ex) {
-                System.out.println(ex);
-                System.exit(-1);
+                kill();
             }
         }
  

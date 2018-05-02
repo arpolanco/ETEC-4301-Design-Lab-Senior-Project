@@ -71,16 +71,25 @@ class Server{
                 }
             }
         }
-        if(drones.size() < 1){
-            System.out.println("No drones online. Closing this connection");
-            phone.close();
-        }else if(currentControllers == TOTAL_DRONES){
-            System.out.println("All the slots are taken, sorry");
+        int neilPatrickHarris = getAvailableDrone();
+        if(neilPatrickHarris == -1){
+            System.out.println("No drones are available. Disconnecting stupid phone...");
             phone.close();
         }else{
-            drones.get(currentDrone-1).attachController(phone);
+            System.out.print("Connecting phone to drone ");
+            System.out.println(neilPatrickHarris);
+            drones.get(neilPatrickHarris).attachController(phone);
             currentControllers++;
         }        
+    }
+    
+    public static int getAvailableDrone(){
+        for(int i=0;i<currentDrone;i++){
+            if(!drones.get(i).hasController()){
+                return i;
+            }
+        }
+        return -1;
     }
     
     public static void handleDrone(Socket drone) throws IOException{
@@ -224,7 +233,7 @@ class Server{
                                 case "flight":
                                     System.out.print("Powering into flight mode ");
                                     sendType = 'p';
-                                    drones.get(droneID).setState(Drone.DroneState.IDLE);
+                                    drones.get(droneID).setState(Drone.DroneState.FLIGHT);
                                     break;
                                 default:
                                     System.out.print("Other request: ");
