@@ -25,6 +25,10 @@ public class GUILayout{
     public Button quitButton;
     public Button flightButton;
     public Button ipButton;
+    Texture quit;
+    Texture fi;
+    Texture ip;
+    Texture shoot;
     StatusBar healthBar;
     StatusBar shootBar;
     int joyStickRad;
@@ -33,6 +37,8 @@ public class GUILayout{
     float guiHeight;
     int buttonHeight;
     int buttonWidth;
+    SpriteBatch batch;
+    //viewport view;
     public boolean displayIPButton = true;
 
 
@@ -50,19 +56,36 @@ public class GUILayout{
     public void init(Viewport viewport) {
         position = new Vector2();
         joyStickRad = (int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.00025);
-        buttonHeight = (int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.00015);//(int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.01);
+
+        //sizes of buttons
+        buttonHeight = (int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.0002);//(int)((viewport.getWorldWidth()* viewport.getWorldHeight()) *.01);
         buttonWidth = (int)(buttonHeight*1.5);
+
         leftJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.25), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.RED);
         leftJoystick.setSnapY(false);
         rightJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.75), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.WHITE);
-        quitButton = new Button(new Vector2((int)(viewport.getWorldWidth()*.7), (int)(viewport.getWorldHeight() *.9)), new Vector2(buttonWidth, buttonHeight),"QUIT", false, Color.CHARTREUSE);
+
+        //buttons
+        quitButton = new Button(new Vector2((int)(viewport.getWorldWidth()-buttonWidth), (int)(viewport.getWorldHeight()-buttonHeight)), new Vector2(buttonWidth, buttonHeight),"QUIT", false, Color.CHARTREUSE);
         flightButton = new Button(new Vector2((int)(viewport.getWorldWidth()*.3), (int)(viewport.getWorldHeight() *.8)), new Vector2(buttonWidth, buttonHeight),"FLIGHT", false,Color.CYAN);
-        ipButton = new Button(new Vector2(((int)(viewport.getWorldWidth()*.5-buttonWidth)), (int)(viewport.getWorldHeight() *.5-buttonHeight)), new Vector2(buttonWidth*2, buttonHeight*2),"IP", true, Color.LIGHT_GRAY);
-        shootButton = new Button(new Vector2((int)((leftJoystick.initPos.x+rightJoystick.initPos.x*.5)-buttonWidth), (int)(viewport.getWorldHeight()*.4+buttonHeight)),new Vector2(buttonWidth*1.2f, buttonHeight),"FIRE", false, Color.OLIVE);
+        ipButton = new Button(new Vector2(((int)(viewport.getWorldWidth()*.5)), (int)(viewport.getWorldHeight() *.5-buttonHeight)), new Vector2(buttonWidth*2, buttonHeight*2),"IP", true, Color.LIGHT_GRAY);
+        shootButton = new Button(new Vector2((int)((viewport.getWorldWidth()*.5)+buttonWidth*.5), (int)(viewport.getWorldHeight()*.4+buttonHeight)),new Vector2(buttonWidth*1.2f, buttonHeight),"FIRE", false, Color.OLIVE);
+
+        //health bars
         healthBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.95)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.FIREBRICK);
         shootBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.9)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.YELLOW);
+
+        //gui size
         guiWidth = viewport.getWorldWidth();
         guiHeight = viewport.getWorldHeight();
+
+        //textures
+        quit = new Texture(Gdx.files.internal("Quit.png"));
+        fi = new Texture(Gdx.files.internal("fi.png"));
+        ip = new Texture(Gdx.files.internal("IP.png"));
+        shoot = new Texture(Gdx.files.internal("Shoot.png"));
+
+        batch = new SpriteBatch();
 
         //image = new Texture(Gdx.files.internal("badlogic.jpg"));
         //backgroundImg = new Rectangle();
@@ -84,25 +107,36 @@ public class GUILayout{
 
 
 
-    public void render(ShapeRenderer renderer, SpriteBatch spriteBatch ) {
+    public void render(ShapeRenderer renderer, Viewport view) {
 
         //spriteBatch.draw(image,50, 50);
+        batch.getProjectionMatrix().setToOrtho2D(0, 0, guiWidth, guiHeight);
+        batch.begin();
+        //System.out.println(batch.isDrawing())
         if(!displayIPButton)
         {
             leftJoystick.render(renderer);
             rightJoystick.render(renderer);
             healthBar.render(renderer);
             shootBar.render(renderer);
-            quitButton.render(renderer,spriteBatch);
-            flightButton.render(renderer,spriteBatch);
-            shootButton.render(renderer,spriteBatch);
+            //quitButton.render(renderer);
+            //flightButton.render(renderer);
+            //shootButton.render(renderer);
+            batch.draw(shoot,shootButton.mPos.x,shootButton.mPos.y,buttonWidth,buttonHeight);
+            batch.draw(quit, quitButton.mPos.x,quitButton.mPos.y,buttonWidth,buttonHeight);
+            batch.draw(fi,flightButton.mPos.x,flightButton.mPos.y,buttonWidth,buttonHeight);
+            //System.out.println((buttonWidth/guiWidth)*buttonWidth);//((buttonHeight*.5f)/guiHeight)*buttonHeight);
+            //batch.draw(quit,quitButton.mPos.x,quitButton.mPos.y,(buttonWidth*.5f)/guiWidth,(buttonHeight*.5f)/guiHeight);
+            //batch.draw(fi,flightButton.mPos.x,flightButton.mPos.y,(buttonWidth*.5f)/guiWidth,(buttonHeight*.5f)/guiHeight);
         }
 
         else
         {
-            ipButton.render(renderer,spriteBatch);
+            ipButton.render(renderer);
+            batch.draw(fi,ipButton.mPos.x,ipButton.mPos.y,ipButton.mSize.x,ipButton.mSize.y);
         }
 
+        batch.end();
         //renderer.line(position, new Vector2((position.x+temp.x * 20), (position.y+temp.y * 20)));
     }
 
