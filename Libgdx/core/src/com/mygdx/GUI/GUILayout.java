@@ -67,9 +67,9 @@ public class GUILayout{
 
         //buttons
         quitButton = new Button(new Vector2((int)(viewport.getWorldWidth()-buttonWidth), (int)(viewport.getWorldHeight()-buttonHeight)), new Vector2(buttonWidth, buttonHeight),"QUIT", false, Color.CHARTREUSE);
-        flightButton = new Button(new Vector2((int)(viewport.getWorldWidth()-buttonWidth), (int)(viewport.getWorldHeight()-buttonHeight*4)), new Vector2(buttonWidth, buttonHeight),"FLIGHT", false,Color.CYAN);
+        flightButton = new Button(new Vector2((int)(viewport.getWorldWidth()-buttonWidth), (int)(viewport.getWorldHeight()-buttonHeight*2.1)), new Vector2(buttonWidth, buttonHeight),"FLIGHT", false,Color.CYAN);
         ipButton = new Button(new Vector2(((int)(viewport.getWorldWidth()*.5-buttonWidth)), (int)(viewport.getWorldHeight() *.5-buttonHeight)), new Vector2(buttonWidth*2, buttonHeight*2),"IP", true, Color.LIGHT_GRAY);
-        shootButton = new Button(new Vector2((int)((viewport.getWorldWidth()*.5)+buttonWidth*.5), (int)(viewport.getWorldHeight()*.4+buttonHeight)),new Vector2(buttonWidth*1.2f, buttonHeight),"FIRE", false, Color.OLIVE);
+        shootButton = new Button(new Vector2((int)((viewport.getWorldWidth()*.5)-buttonWidth*.5), (int)(viewport.getWorldHeight()*.4+buttonHeight)),new Vector2(buttonWidth*1.2f, buttonHeight),"FIRE", false, Color.OLIVE);
 
         //health bars
         healthBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.95)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.FIREBRICK);
