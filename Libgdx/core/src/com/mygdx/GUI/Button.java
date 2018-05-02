@@ -71,15 +71,12 @@ public class Button extends ApplicationAdapter implements Input.TextInputListene
 
     }
 
-    public void render(ShapeRenderer renderer, SpriteBatch batch) {
+    public void render(ShapeRenderer renderer) {
         renderer.set(ShapeRenderer.ShapeType.Filled);
         //renderer.set();
         //draw the background of the stick first
         renderer.setColor(mForegroundColor);
         renderer.rect(button.x,button.y,button.getWidth(),button.getHeight());
-        batch.begin();
-        mFont.draw(batch, mText, mPos.x, mPos.y+(mSize.y*.5f));
-        batch.end();
     }
 
     @Override
