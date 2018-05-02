@@ -45,7 +45,7 @@ try:
             except socket.error as msg:
                 pass
             if not command == b'':
-                #print("Command to Send: ", command)
+                print("Command to Send: ", command)
                 ardy.send(command, False)
             line = ardy.recv()
             i = 0
@@ -100,6 +100,9 @@ try:
     ardy.close()
     print("All Done")
 except KeyboardInterrupt:
-    ardy.sendByteString("01110001")
+    ardy.sendByteString('01110001')
+    ardy.send('q')
+    ardy.send('q')
+    ardy.send('q')
     print("Quitting!")
     print("Good Bye!")

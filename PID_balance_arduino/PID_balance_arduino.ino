@@ -5,7 +5,7 @@
 #define ZERO_THROT 1000
 #define MIN_THROT 1290
 #define MAX_THROT 2000
-#define ANGLE_BOUND 30
+#define ANGLE_BOUND 15
 #define MAX_DELTA_YAW 30
 
 #define LAZAR_PIN 4
@@ -64,15 +64,15 @@ float pid_i_y=0;
 float pid_i_p=0;
 
 /////////////////PID CONSTANTS/////////////////
-double kp_r=5.0;//3.55
+double kp_r=2.75;//3.55
 double ki_r=0.005;//0.005;//0.003
-double kd_r=5.0;//2.05
-double kp_y=4.5;//3.55
+double kd_r=2.75;//2.05
+double kp_y=2.75;//3.55
 double ki_y=0.005;//0.005;//0.003
-double kd_y=4.5;//2.05
-double kp_p=5.0;//3.55
+double kd_y=2.75;//2.05
+double kp_p=2.75;//3.55
 double ki_p=0.005;//0.005;//0.003
-double kd_p=5.0;//2.05
+double kd_p=2.75;//2.05
 ///////////////////////////////////////////////
 
 double throttle=MIN_THROT; //initial value of throttle to the motors
@@ -316,7 +316,7 @@ void loop() {
     //Serial.println(input);
   }
   /////////////////////////////I M U/////////////////////////////////////
-  MPULoop();
+  MPULoop(elapsedTime);
   
   if(mode == FLIGHT){ 
     /*///////////////////////////P I D///////////////////////////////////*/

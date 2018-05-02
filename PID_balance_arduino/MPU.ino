@@ -169,6 +169,7 @@ void dmpDataReady() {
 // ===                      INITIAL SETUP                       ===
 // ================================================================
 void MPUSetup(){
+  while(1){
     // join I2C bus (I2Cdev library doesn't do this automatically)
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin();
@@ -232,6 +233,11 @@ void MPUSetup(){
 
         // get expected DMP packet size for later comparison
         packetSize = mpu.dmpGetFIFOPacketSize();
+        
+        // configure LED for output
+        pinMode(LED_PIN, OUTPUT);
+
+    return;
     } else {
         // ERROR!
         // 1 = initial memory load failed
@@ -242,8 +248,7 @@ void MPUSetup(){
         Serial.println(F(")"));
     }
 
-    // configure LED for output
-    pinMode(LED_PIN, OUTPUT);
+  }
 }
 
 
@@ -252,13 +257,21 @@ void MPUSetup(){
 // ===                    MAIN PROGRAM LOOP                     ===
 // ================================================================
 
-void MPULoop(){
+float time_since_last_good_packet = 0;
+
+void MPULoop(float dt){
 
 // if programming failed, don't try to do anything
     if (!dmpReady) return;
 
     // wait for MPU interrupt or extra packet(s) available
-    while (!mpuInterrupt && fifoCount < packetSize) {
+    if(!mpuInterrupt && fifoCount < packetSize) {
+      time_since_last_good_packet += dt;
+      if(time_since_last_good_packet > 3){
+        Serial.println("Waiting too long for new Packet!!!!!");
+        MPUSetup();
+      }
+      return;
         // other program behavior stuff here
         // .
         // .
@@ -270,6 +283,8 @@ void MPULoop(){
         // .
         // .
     }
+
+    time_since_last_good_packet = 0;
 
     // reset interrupt flag and get INT_STATUS byte
     mpuInterrupt = false;
@@ -326,14 +341,7 @@ void MPULoop(){
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-            /*
-            Serial.print("ypr\t");
-            Serial.print(ypr[0] * 180/M_PI);
-            Serial.print("\t");
-            Serial.print(ypr[1] * 180/M_PI);
-            Serial.print("\t");
-            Serial.println(ypr[2] * 180/M_PI);
-            */
+            
             yaw = ypr[0] * 180/M_PI;
             pitch = ypr[1] * 180/M_PI;
             roll = ypr[2] * 180/M_PI;
@@ -345,17 +353,6 @@ void MPULoop(){
             mpu.dmpGetAccel(&aa, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            
-            
-             
-            /*
-            Serial.print("areal\t");
-            Serial.print(aaReal.x);
-            Serial.print("\t");
-            Serial.print(aaReal.y);
-            Serial.print("\t");
-            Serial.println(aaReal.z);
-            */
             
             realAccelX = aaReal.x;
             realAccelY = aaReal.y;
@@ -370,14 +367,6 @@ void MPULoop(){
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
             mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-            /*
-            Serial.print("aworld\t");
-            Serial.print(aaWorld.x);
-            Serial.print("\t");
-            Serial.print(aaWorld.y);
-            Serial.print("\t");
-            Serial.println(aaWorld.z);
-            */
         #endif
     
         #ifdef OUTPUT_TEAPOT
