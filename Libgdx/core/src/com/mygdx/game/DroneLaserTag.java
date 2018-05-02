@@ -88,12 +88,26 @@ public class DroneLaserTag extends ScreenAdapter implements InputProcessor{
         gui.update(touchlist);
         gui.render(renderer, spriteBatch);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        if(gui.ipButton.isPressed(new Vector2(tp.x, tp.y)))
+        if(gui.displayIPButton == true)
         {
-            drone.client.HOST = gui.ipButton.mText;
-            drone.client.openSocket();
-            drone.isClientConnected = true;
-        };
+            if(gui.ipButton.isPressed(new Vector2(tp.x, tp.y)))
+            {
+                if(gui.displayIPButton == true)
+                {
+                    if(gui.ipButton.isTextGiven == true)
+                    {
+                        drone.client.HOST = gui.ipButton.mText;
+                        // drone.client.openSocket();
+                        if(drone.client.isConnected == false)
+                            gui.ipButton.isTextGiven = false;
+                        else
+                            gui.setDisplayIPButton(false);
+                    }
+                }
+
+            }
+        }
+
 
         renderer.end();
         drone.update(Gdx.graphics.getDeltaTime());

@@ -27,6 +27,8 @@ public class Button extends ApplicationAdapter implements Input.TextInputListene
     Rectangle button;
     boolean triggered = false;
     boolean isTextInput = false;
+    public boolean isTextGiven = false;
+
 
     public Button(Vector2 pos, Vector2 size, String text, boolean textInput, Color color)
     {
@@ -77,20 +79,17 @@ public class Button extends ApplicationAdapter implements Input.TextInputListene
         batch.begin();
         mFont.draw(batch, mText, mPos.x, mPos.y+(mSize.y*.5f));
         batch.end();
-        /*
-        mBatch.begin();
-        GlyphLayout layout = new GlyphLayout(mFont, mText);
-        mBatch.end();
-        */
     }
 
     @Override
     public void input(String text) {
+
         mText = text;
+        isTextGiven = true;
     }
 
     @Override
     public void canceled() {
-
+        isTextGiven = true;
     }
 }

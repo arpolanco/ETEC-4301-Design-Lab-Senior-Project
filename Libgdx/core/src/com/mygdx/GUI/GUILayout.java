@@ -33,6 +33,7 @@ public class GUILayout{
     float guiHeight;
     int buttonHeight;
     int buttonWidth;
+    public boolean displayIPButton = true;
 
 
 
@@ -54,10 +55,10 @@ public class GUILayout{
         leftJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.25), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.RED);
         leftJoystick.setSnapY(false);
         rightJoystick = new Joystick(new Vector2((int)(viewport.getWorldWidth()*.75), (int)(viewport.getWorldHeight() *.3)), joyStickRad, Color.WHITE);
-        quitButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.7), (int)(viewport.getWorldHeight() *.9)), new Vector2(buttonWidth, buttonHeight),"QUIT", false, Color.CHARTREUSE);
-        flightButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.3), (int)(viewport.getWorldHeight() *.8)), new Vector2(buttonWidth, buttonHeight),"FLIGHT", false,Color.CYAN);
-        ipButton = new Button(new Vector2((int)(int)(viewport.getWorldWidth()*.3), (int)(viewport.getWorldHeight() *.5)), new Vector2(buttonWidth, buttonHeight),"IP", true, Color.LIGHT_GRAY);
-        shootButton = new Button(new Vector2((int)((leftJoystick.initPos.x+rightJoystick.initPos.x*.5)-buttonWidth), (int)(viewport.getWorldHeight()*.4)),new Vector2(buttonWidth*1.2f, buttonHeight),"FIRE", false, Color.OLIVE);
+        quitButton = new Button(new Vector2((int)(viewport.getWorldWidth()*.7), (int)(viewport.getWorldHeight() *.9)), new Vector2(buttonWidth, buttonHeight),"QUIT", false, Color.CHARTREUSE);
+        flightButton = new Button(new Vector2((int)(viewport.getWorldWidth()*.3), (int)(viewport.getWorldHeight() *.8)), new Vector2(buttonWidth, buttonHeight),"FLIGHT", false,Color.CYAN);
+        ipButton = new Button(new Vector2(((int)(viewport.getWorldWidth()*.5-buttonWidth)), (int)(viewport.getWorldHeight() *.5-buttonHeight)), new Vector2(buttonWidth*2, buttonHeight*2),"IP", true, Color.LIGHT_GRAY);
+        shootButton = new Button(new Vector2((int)((leftJoystick.initPos.x+rightJoystick.initPos.x*.5)-buttonWidth), (int)(viewport.getWorldHeight()*.4+buttonHeight)),new Vector2(buttonWidth*1.2f, buttonHeight),"FIRE", false, Color.OLIVE);
         healthBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.95)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.FIREBRICK);
         shootBar = new StatusBar(new Vector2(viewport.getWorldWidth()*.01f,(int)(viewport.getWorldHeight()*.9)), (int)(viewport.getWorldWidth()*.4), (int)(viewport.getWorldHeight()*.03), 100, Color.YELLOW);
         guiWidth = viewport.getWorldWidth();
@@ -71,35 +72,12 @@ public class GUILayout{
 
 
     public void update(HashMap<Integer, Vector2> touchlist) {
-       /* Vector2 temp = new Vector2(input.x,input.y);
-        leftJoystick.update(temp);
-        rightJoystick.update(temp);
-        */
-        leftJoystick.update(touchlist);
-        rightJoystick.update(touchlist);
 
-        /*
-        for(Integer key:touchlist.keySet()){
-            Vector2 touchpos=touchlist.get(key);
-            System.out.println(touchpos.toString());
-            //do your manipulation here
-            leftJoystick.update(touchpos);
-            rightJoystick.update(touchpos);
-
-        }
-        */
-
-        /*if(quitButton.isPressed(temp))
-        {
-            System.out.println("Quit");
-        }
-
-        if(shootButton.isPressed(new Vector2(input.x,input.y)))
-        {
-            System.out.println("Shoot");
-        }
-        */
-
+       if(!displayIPButton)
+       {
+           leftJoystick.update(touchlist);
+           rightJoystick.update(touchlist);
+       }
 
     }
 
@@ -107,24 +85,34 @@ public class GUILayout{
 
 
     public void render(ShapeRenderer renderer, SpriteBatch spriteBatch ) {
-        //HealthBar.render(renderer);
-        //ShootBar.render(renderer);
 
-        //change the image position
         //spriteBatch.draw(image,50, 50);
-        leftJoystick.render(renderer);
-        rightJoystick.render(renderer);
-        healthBar.render(renderer);
-        shootBar.render(renderer);
-        quitButton.render(renderer,spriteBatch);
-        flightButton.render(renderer,spriteBatch);
-        shootButton.render(renderer,spriteBatch);
-        ipButton.render(renderer,spriteBatch);
+        if(!displayIPButton)
+        {
+            leftJoystick.render(renderer);
+            rightJoystick.render(renderer);
+            healthBar.render(renderer);
+            shootBar.render(renderer);
+            quitButton.render(renderer,spriteBatch);
+            flightButton.render(renderer,spriteBatch);
+            shootButton.render(renderer,spriteBatch);
+        }
+
+        else
+        {
+            ipButton.render(renderer,spriteBatch);
+        }
+
         //renderer.line(position, new Vector2((position.x+temp.x * 20), (position.y+temp.y * 20)));
     }
 
     public void imageFeed(Texture img) {
         image = img;
+    }
+
+    public void setDisplayIPButton(boolean bol)
+    {
+        displayIPButton = bol;
     }
 }
 

@@ -6,6 +6,7 @@ import com.badlogic.gdx.Net.Protocol;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 //import com.badlogic.gdx.net.Socket;
+import java.net.ConnectException;
 import java.net.Socket;
 import com.badlogic.gdx.net.SocketHints;
 import java.awt.Image;
@@ -13,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
@@ -34,6 +36,8 @@ public class Client extends Thread{
     private Image droneFrame;
     Protocol protocol;
     SocketHints hints;
+    int reconnections = 0;
+    public boolean isConnected = false;
     
     public String HOST = "206.21.94.104";
     final int PORT = 1101;
@@ -58,10 +62,40 @@ public class Client extends Thread{
             socket = new Socket(HOST, PORT);
             input = socket.getInputStream();
             output = socket.getOutputStream();
-        } catch (IOException ex) {
-            System.exit(-1);
+            isConnected = true;
+        }
+        catch (ConnectException e) {
+            System.out.println("Error while connecting. " + e.getMessage());
+            tryToReconnect();
+        } catch (SocketTimeoutException e) {
+            System.out.println("Connection: " + e.getMessage() + ".");
+            tryToReconnect();
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
         }
         sendMessage("PHONE");
+    }
+
+    private void tryToReconnect() {
+
+        System.out.println("I will try to reconnect in 10 seconds... (" + reconnections + "/2)");
+        try {
+            Thread.sleep(10000); //milliseconds
+        } catch (InterruptedException e) {
+        }
+
+        if (reconnections < 2) {
+            reconnections++;
+            openSocket();
+
+        } else {
+            System.out.println("Reconnection failed, exeeded max reconnection tries. Shutting down.");
+
+            //System.exit(0);
+            return;
+        }
+
     }
     
     public Texture getImage(){
