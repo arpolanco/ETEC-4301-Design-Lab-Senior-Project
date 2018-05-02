@@ -40,14 +40,3 @@ class Arduino:
                 print(chr(val))
             
             self.send(str(chr(val)).encode("latin_1"), False)
-            
-            if recv:
-                line = self.recv()
-                while not line == b'Received: \r\n':
-                    if not line == b'':
-                        print(line)
-                    line = self.recv()
-        
-                line = self.recv()
-                print("RECV: ",line)
-
