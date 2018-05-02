@@ -28,14 +28,17 @@ try:
         buffer.flush()
         #Should be connected to Server at this point
         print("Connected??")
+        identity = b''
+        while True:
+            try:
+        	    identity = server.recv(1) #blocking
+            except socket.error as msg:
+                pass
+            if not identity == b'':
+                print("Drone ID: ", identity[0])
+                break
+		 
     print('Succesfuly connected to Arduino!')
-    line = ardy.recv()
-    while not line == b'Mode = TUNING\n':
-        if not line == b'':
-            print(line.decode().replace("\n\r", ""))
-        line = ardy.recv()
-    
-    print('Initialization complete! Beginning while loop!')
     running = True
     while(running):
         if isPhoneBased:
@@ -101,8 +104,6 @@ try:
     print("All Done")
 except KeyboardInterrupt:
     ardy.sendByteString('01110001')
-    ardy.send('q')
-    ardy.send('q')
     ardy.send('q')
     print("Quitting!")
     print("Good Bye!")
