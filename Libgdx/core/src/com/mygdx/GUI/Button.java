@@ -28,6 +28,7 @@ public class Button extends ApplicationAdapter implements Input.TextInputListene
     boolean triggered = false;
     boolean isTextInput = false;
     public boolean isTextGiven = false;
+    public boolean hasSubmitted = false;
 
 
     public Button(Vector2 pos, Vector2 size, String text, boolean textInput, Color color)
@@ -53,7 +54,7 @@ public class Button extends ApplicationAdapter implements Input.TextInputListene
             if(!triggered)
             {
                 triggered = true;
-                System.out.println(mText);
+                //System.out.println(mText);
                 if(isTextInput)
                     Gdx.input.getTextInput(this,"IP Input", mText, "Enter your IP here");
 

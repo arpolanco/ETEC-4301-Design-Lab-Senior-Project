@@ -59,10 +59,16 @@ public class Client extends Thread{
     public void openSocket(){
         
         try {
+            System.out.println("Host: " + HOST);
+            System.out.println("Port: " + PORT);
             socket = new Socket(HOST, PORT);
+            System.out.println("Socket made!");
             input = socket.getInputStream();
+            System.out.println("1");
             output = socket.getOutputStream();
+            System.out.println("2");
             isConnected = true;
+            System.out.println("Connection complete!");
         }
         catch (ConnectException e) {
             System.out.println("Error while connecting. " + e.getMessage());
